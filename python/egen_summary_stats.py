@@ -4,10 +4,7 @@ import pandas as pd
 #from math import log, e
 import sys, os, glob
 from stats_utils import entropy_custom
-# rpy2 to import and use r codes
-# this is needed for the voxet reader
-from rpy2.robjects.packages import importr
-import rpy2.robjects as ro
+import
 
 
 #%%
@@ -63,15 +60,6 @@ def read_gocad_voxet(directory, type):
 
     ent = litho_df.apply(entropy_custom, axis = 1)
     # TODO this isn't working - check results. min entropy should be 0 if min card = 1
-    # ent testing
-    test_same = np.full(shape = 100, fill_value= 11)
-    test_diff = np.random.randint(low = 11, high = 15, size = 100)
-    test_v_diff = np.random.randint(low = 1, high = 15, size = 100)
-    ent_same = entropy(test_same)
-    ent_diff = entropy(test_diff)
-    ent_cust_same = entropy_custom(test_same)
-    ent_cust_diff = entropy_custom(test_diff)
-    ent_cust_v_diff = entropy_custom(test_v_diff)
 
     # frequency / probability
 
@@ -79,6 +67,17 @@ def read_gocad_voxet(directory, type):
     for p in range(int(litho_df.iloc[:, [0]].max())):
         # calculate the proportion of lithoID = p for each row
         frequency_df[p] = litho_df.apply(some function in here proportion of lithoID = p for each row, axis=1) # TODO fix this bit - use apply to determine
+
+#%%
+
+def export_gocad_voxet(dataframe, path, type):
+    '''exports a dataframe to gocad voxet binary
+    'dataframe' is the pandas dataframe to be exported as voxet
+    'path' is the export path
+    'type' is the type of voxet - this defines the export name: "cardinality", "entropy", "probability"'''
+    coords = np.zeros([int(header.loc[6,1]*header.loc[6,2]*header.loc[6,3]), 3])
+    coords_ref =
+
 
 
 
