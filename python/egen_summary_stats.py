@@ -4,19 +4,16 @@ import pandas as pd
 #from math import log, e
 import sys, os, glob
 from stats_utils import entropy_custom
-import
 
 
 #%%
 
-def read_gocad_voxet(directory, type):
+def read_gocad_voxet(directory, type, card=False, ent=False):
     # i want to specify the voxet name too, but first let's test just using the directory name
     #type = c("Card_VOXET", "Entropy_VOXET", "Frequency_VOXET", "OLS_VOXET", "P1_VOXET", "GOCAD_LITHO")
     # this function imports voxets that are output by Geomodeller and related CURE (Common Uncertainty Research Explorer).
     # while these voxets are technically "Gocad" format, true Gocad format has @@ prefixes to properties
     # So this reader won't work with true gocad formats (yet).
-    #current_dir = os.getcwd()
-    #on.exit(setwd(current_dir))
     os.chdir(directory)
 
     pattern = type
@@ -49,63 +46,66 @@ def read_gocad_voxet(directory, type):
         litho_df[f] = pd.DataFrame(data) # assign data to df column
 
     litho_df.columns = [prop_files] # label columns with model name
+    # issue - the original voxet export includes 'air' - lithoID = 0, the recalculated model voxets do not.
+    # we want air to be included, esp for geophys. So we create an 'air' mask using df indices where 0.0
+    air_idx = litho_df[['origin_GOCAD_LITHO.vop1']] == 0.0 # note this uses CURE naming # TODO change when orig voxet comes from EGEN
+    idx = air_idx
+    for i in range(litho_df.shape[1]-1): # subtract 1 from iterator because we start with one row
+        air_idx = np.concatenate([air_idx, idx], axis=1)
+    litho_df[air_idx] = 0.0
+
 
     # calculate cardinality
     # simple operation - how many unique values in each row.
-    card =  litho_df.nunique(1)
+    if card is True:
+        card = litho_df.nunique(1)
 
-    # calculate entropy
-    #  scipy.stats.entropy(pk, qk=None, base=None, axis=0)
-    test = litho_df[:1]
+    #calculate entropy
+    if ent is True:
+        ent = litho_df.apply(entropy_custom, axis=1)
 
-    ent = litho_df.apply(entropy_custom, axis = 1)
-    # TODO this isn't working - check results. min entropy should be 0 if min card = 1
+    return litho_df, card, ent
 
-    # frequency / probability
 
-    frequency_df = pd.DataFrame(np.zeros([int(header.loc[6,1]*header.loc[6,2]*header.loc[6,3]), int(litho_df.iloc[:, [0]].max())]))
-    for p in range(int(litho_df.iloc[:, [0]].max())):
-        # calculate the proportion of lithoID = p for each row
-        frequency_df[p] = litho_df.apply(some function in here proportion of lithoID = p for each row, axis=1) # TODO fix this bit - use apply to determine
 
 #%%
-
-def export_gocad_voxet(dataframe, path, type):
-    '''exports a dataframe to gocad voxet binary
-    'dataframe' is the pandas dataframe to be exported as voxet
-    'path' is the export path
-    'type' is the type of voxet - this defines the export name: "cardinality", "entropy", "probability"'''
-    coords = np.zeros([int(header.loc[6,1]*header.loc[6,2]*header.loc[6,3]), 3])
-    coords_ref =
-
-
+#
+# def export_gocad_voxet(dataframe, path, type):
+#     '''exports a dataframe to gocad voxet binary
+#     'dataframe' is the pandas dataframe to be exported as voxet
+#     'path' is the export path
+#     'type' is the type of voxet - this defines the export name: "cardinality", "entropy", "probability"'''
+#     coords = np.zeros([int(header.loc[6,1]*header.loc[6,2]*header.loc[6,3]), 3])
+#     coords_ref =
 
 
-
-
-
-  #build voxet in x, y, z order 
-  coords <- matrix(NA, nrow = header[7,2]*header[7,3]*header[7,4], ncol = 3)
-  coords_ref <- list(z = seq(header[5,4], header[6,4], header[8,4]), y = seq(header[5,3], header[6,3], header[8,3]), x = seq(header[5,2], header[6,2], header[8,2]))
-  l=0
-  for (i in 1:header[7,4]){ #then build z-axis
-    for (j in 1:header[7,3]){ #then build y-axis
-      for (k in 1:header[7,2]){ #build x-axis first
-        l <- l+1
-        coords[l,] <- c(coords_ref$x[k], coords_ref$y[j], coords_ref$z[i])
-      }
-    }
-  }
-  # combine all property vectors into a dataframe
-  r_grid <- data.frame(coords, data.frame(sapply(prop_files, function(x) get(x))))
-  # rename coords columns in spatstat expectation i.e. lower case "x", "y", "z"
-  names(r_grid)[names(r_grid)=="X1"] <- "x"
-  names(r_grid)[names(r_grid)=="X2"] <- "y"
-  names(r_grid)[names(r_grid)=="X3"] <- "z"
-  
-  temp_list <- list(header = header, header_units = header_units, data = r_grid)
-  #eval(parse(paste("r_grid_", type, sep="")) <- r_grid) # return grid with type in name
-  return(temp_list)
-}
-
-
+#
+#
+#
+#
+#
+#   #build voxet in x, y, z order
+#   coords <- matrix(NA, nrow = header[7,2]*header[7,3]*header[7,4], ncol = 3)
+#   coords_ref <- list(z = seq(header[5,4], header[6,4], header[8,4]), y = seq(header[5,3], header[6,3], header[8,3]), x = seq(header[5,2], header[6,2], header[8,2]))
+#   l=0
+#   for (i in 1:header[7,4]){ #then build z-axis
+#     for (j in 1:header[7,3]){ #then build y-axis
+#       for (k in 1:header[7,2]){ #build x-axis first
+#         l <- l+1
+#         coords[l,] <- c(coords_ref$x[k], coords_ref$y[j], coords_ref$z[i])
+#       }
+#     }
+#   }
+#   # combine all property vectors into a dataframe
+#   r_grid <- data.frame(coords, data.frame(sapply(prop_files, function(x) get(x))))
+#   # rename coords columns in spatstat expectation i.e. lower case "x", "y", "z"
+#   names(r_grid)[names(r_grid)=="X1"] <- "x"
+#   names(r_grid)[names(r_grid)=="X2"] <- "y"
+#   names(r_grid)[names(r_grid)=="X3"] <- "z"
+#
+#   temp_list <- list(header = header, header_units = header_units, data = r_grid)
+#   #eval(parse(paste("r_grid_", type, sep="")) <- r_grid) # return grid with type in name
+#   return(temp_list)
+# }
+#
+#

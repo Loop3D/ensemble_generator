@@ -30,8 +30,8 @@ egen_orig_model_voxets(234, 188, 88, litho=1, scalar=0, scalar_grads=0)
 egen_paths(geomodeller = r"C:\GeoModeller\GeoModeller4.0.7_x64_27eee3dc31ba", model = r"C:/CURE/Models_Prelim_geophys")
 egen_xml_to_task("Models_Prelim_geophys.xml")
 egen_calc_original()
-egen_orig_model_voxets(50, 50, 25, litho=1)
-egen_create_batch("CURE-2020-03-26-12-59-45_0.task")
+egen_orig_model_voxets(103, 113, 33, litho=1)
+egen_create_batch("orig_model_voxet.task")
 
 #%%
 # Hamersley with petro assigned,

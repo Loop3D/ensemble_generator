@@ -84,6 +84,8 @@ fig.show()
 
 #%% voxet import testing
 
+
+
 import glob
 #windows
 directory = "C:/Users/Mark/Cloudstor/EGen/geol-model-egen/test_data3_MDL/Models_Prelim_geophys/CURE"
@@ -91,4 +93,40 @@ type = "GOCAD_LITHO"
 #mac
 directory = "/Users/marklindsay/cloudstor/EGen/geol-model-egen/test_data3_MDL/Models_Prelim_geophys/CURE"
 
-#entropy testing
+from egen_summary_stats import read_gocad_voxet
+litho_df,card,ent = read_gocad_voxet(directory, type, card=True, ent=True)
+
+#%% testing litho probability calc
+from stats_utils import litho_probabilities
+
+litho_df = litho_df[0]
+litho_prob = litho_probabilities(litho_df)
+
+
+#%%
+#probability testing
+
+lithos = np.unique(array)
+lithos = lithos.astype(int)
+litho_prob = pd.DataFrame({'LithoID': lithos.astype(int)})  # dataframe to store results
+np_array = np.asarray(litho_df)
+# TODO try convert df to array and run np.unique on that to make faster
+t1_start = process_time()
+#for r in range(0, 5000):
+for r in range(len(array)):
+    # loop through rows
+    unique, counts = np.unique(np_array[r], return_counts=True)
+    #unique[r], counts[r] = np.apply_along_axis(np.unique(return_counts=True), axis = 1, arr=np_array)
+    # test = dict(zip(unique, counts))
+    litho_prob[r] = litho_prob['LithoID'].map(dict(zip(unique, counts)))
+litho_prob.iloc[:, 1:] = litho_prob / array.shape[1]
+t1_stop = process_time()
+print("Elapsed time:", t1_stop, t1_start)
+
+print("Elapsed time during the whole program in seconds:",
+      t1_stop - t1_start)
+#%% exports for the interim
+# litho_prob.to_hdf("Hams_litho_prob.h5", key='litho_prob', mode='w') not working... needs 'tables'
+litho_prob.to_csv('Hams_litho_prob.csv', sep=',', na_rep='na')
+card.to_csv('Hams_card.csv', sep=',', na_rep="na")
+ent.to_csv('Hams_ent.csv', sep=',', na_rep='na')

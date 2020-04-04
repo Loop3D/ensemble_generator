@@ -40,12 +40,15 @@ def litho_probabilities(array):
     lithos = np.unique(array)
     lithos = lithos.astype(int)
     litho_prob = pd.DataFrame({'LithoID': lithos.astype(int)}) # dataframe to store results
+    #TODO try convert df to array and run np.unique on that to make faster
+    #for r in range(0, 500):
     for r in range(len(array)):
         # loop through rows
         unique, counts = np.unique(array.loc[r], return_counts=True)
         #test = dict(zip(unique, counts))
         litho_prob[r] = litho_prob['LithoID'].map(dict(zip(unique, counts)))
-    litho_prob = litho_prob/len(prop_files)
+        print(r),
+    litho_prob.iloc[:, 1:] = litho_prob / array.shape[1]
     t1_stop = process_time()
     print("Elapsed time:", t1_stop, t1_start)
 
