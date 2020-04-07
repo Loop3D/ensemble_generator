@@ -31,31 +31,18 @@ def entropy_custom(array, base=None):
 
   return ent
 
-#%% litho probabilities
+#%% calculate the probability (between 0 and 1) of a lithology in a cell
 
-def litho_probabilities(array):
-    '''computes the probability of all lithologies at a given location'''
-    t1_start = process_time()
-    #litho_prob = pd.DataFrame(np.zeros([int(header.loc[6, 1] * header.loc[6, 2] * header.loc[6, 3]), len(np.unique(array))]))
+def litho_probabilites(array):
     lithos = np.unique(array)
-    lithos = lithos.astype(int)
-    litho_prob = pd.DataFrame({'LithoID': lithos.astype(int)}) # dataframe to store results
-    #TODO try convert df to array and run np.unique on that to make faster
-    #for r in range(0, 500):
-    for r in range(len(array)):
-        # loop through rows
-        unique, counts = np.unique(array.loc[r], return_counts=True)
-        #test = dict(zip(unique, counts))
-        litho_prob[r] = litho_prob['LithoID'].map(dict(zip(unique, counts)))
-        print(r),
-    litho_prob.iloc[:, 1:] = litho_prob / array.shape[1]
-    t1_stop = process_time()
-    print("Elapsed time:", t1_stop, t1_start)
-
-    print("Elapsed time during the whole program in seconds:",
-          t1_stop - t1_start)
+    litho_prob = pd.DataFrame([])
+    for i in range(0, int(lithos.max())+1):
+        temp = array[array == i]
+        temp_counts = temp.count(axis=1)
+        litho_prob = litho_prob.append(temp_counts, ignore_index=True)
+    litho_prob = litho_prob / array.shape[1]
     return(litho_prob)
 
-#%%
+
 
 

@@ -1,3 +1,8 @@
+from math import log, e
+from time import process_time # remove this once functions are finished
+import numpy as np
+import pandas as pd
+
 
 # testing orientation perturb
 
@@ -94,37 +99,106 @@ type = "GOCAD_LITHO"
 directory = "/Users/marklindsay/cloudstor/EGen/geol-model-egen/test_data3_MDL/Models_Prelim_geophys/CURE"
 
 from egen_summary_stats import read_gocad_voxet
-litho_df,card,ent = read_gocad_voxet(directory, type, card=True, ent=True)
+litho_df,card,ent = read_gocad_voxet(directory, type, card=False, ent=False)
 
 #%% testing litho probability calc
 from stats_utils import litho_probabilities
 
-litho_df = litho_df[0]
-litho_prob = litho_probabilities(litho_df)
+#litho_df = litho_df[0]
+litho_prob = litho_probabilities(litho_df, 6, len(litho_df))
 
 
 #%%
 #probability testing
-
+array = np.asarray(litho_df)
+counts = np.zeros([500,1])
+unique = np.zeros([500,1])
+#for
+t1_start = process_time()
 lithos = np.unique(array)
 lithos = lithos.astype(int)
 litho_prob = pd.DataFrame({'LithoID': lithos.astype(int)})  # dataframe to store results
-np_array = np.asarray(litho_df)
+#np_array = np.asarray(litho_df)
 # TODO try convert df to array and run np.unique on that to make faster
-t1_start = process_time()
-#for r in range(0, 5000):
-for r in range(len(array)):
+for r in range(0, 500):
+#for r in range(len(array)):
     # loop through rows
-    unique, counts = np.unique(np_array[r], return_counts=True)
-    #unique[r], counts[r] = np.apply_along_axis(np.unique(return_counts=True), axis = 1, arr=np_array)
+    unique, counts = np.unique(array[r], return_counts=True)
+    #unique[unts[r] = np.apply_along_axis(np.unique(return_counts=True), axis = 1, arr=array) # run using dataframe
+
+    #unique[r], counts[r] = np.apply_along_axis(np.unique(return_counts=True), axis = 1, arr=np_array) # run using np array
     # test = dict(zip(unique, counts))
-    litho_prob[r] = litho_prob['LithoID'].map(dict(zip(unique, counts)))
+    #litho_prob[r] = litho_prob['LithoID'].map(dict(zip(unique, counts)))
 litho_prob.iloc[:, 1:] = litho_prob / array.shape[1]
 t1_stop = process_time()
 print("Elapsed time:", t1_stop, t1_start)
 
 print("Elapsed time during the whole program in seconds:",
       t1_stop - t1_start)
+
+#%% test map function
+
+t1_start = process_time()
+lithos = np.unique(array)
+lithos = lithos.astype(int)
+litho_prob = pd.DataFrame({'LithoID': lithos.astype(int)})  # dataframe to store results
+#np_array = np.asarray(litho_df)
+# TODO try convert df to array and run np.unique on that to make faster
+test_prob = map(uni_counts, litho_df)
+litho_prob.iloc[:, 1:] = litho_prob / array.shape[1]
+t1_stop = process_time()
+print("Elapsed time:", t1_stop, t1_start)
+
+print("Elapsed time during the whole program in seconds:",
+      t1_stop - t1_start)
+
+
+
+
+#%% single cpu testing
+from stats_utils import uni_counts
+
+t1_start = process_time()
+test_prob = uni_counts(litho_df, 5000)
+t1_stop = process_time()
+print("Elapsed time:", t1_stop, t1_start)
+
+print("Elapsed time during the whole program in seconds:",
+      t1_stop - t1_start)
+
+#%% multiple processing
+
+import multiprocessing as mp
+
+print("number of processors: ", mp.cpu_count())
+
+#step 1 - initialise multiprocessing.Pool
+t1_start = process_time()
+
+#pool = mp.Pool(int(mp.cpu_count()/2)) # divide by 2 so only half the cpus are used - hopefully don't crash things
+pool = mp.Pool(4) # 1 cpu just for testing
+# step 2 - 'pool.apply' to 'uni_counts'
+
+test_prob = [pool.apply(uni_counts, args=(litho_df, 50000))]
+
+# step 3 - close pool
+
+pool.close()
+
+t1_stop = process_time()
+print("Elapsed time:", t1_stop, t1_start)
+print("Elapsed time during the whole program in seconds:",
+      t1_stop - t1_start)
+#%% testing trying to use np.apply_along_axis
+
+def prob_row(num_litho):
+    output = pd.DataFrame({'LithoID': lithos.astype(int)})
+    unique, counts = np.unique(array, return_counts=True)
+    output = output['LithoID'].map(dict(zip(unique, counts)))
+
+
+
+
 #%% exports for the interim
 # litho_prob.to_hdf("Hams_litho_prob.h5", key='litho_prob', mode='w') not working... needs 'tables'
 litho_prob.to_csv('Hams_litho_prob.csv', sep=',', na_rep='na')
