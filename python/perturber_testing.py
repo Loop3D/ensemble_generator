@@ -14,6 +14,23 @@ dircos2ddd(l,m,n)
 check_file_orient = file_orient[["azimuth", "dip"]].join(new_ori)
 
 #%% Testing contact orientations
+from perturber_func import perturb_geol_interface
+import os
+#windows
+os.chdir("C:/Users/Mark/Cloudstor/EGen/test_data3/output")
+
+perturb_geol_interface_uniform(11, 5, DEM = True)
+
+perturb_geol_interface(11, 5, DEM = True)
+perturb_geol_interface(11, 5, distribution='normal', DEM = True)
+perturb_geol_interface(11, 5, file_input="faults", distribution="normal", DEM=True)
+
+orig, new = perturb_geol_interface(1, 5, distribution='normal', DEM = True)
+
+diff_x = orig["X"] - new["X"]
+plt.hist(diff_x)
+plt.show()
+
 az_diff = file_orient["azimuth"] - new_ori[1]
 dip_diff = file_orient["dip"] - new_ori[0]
 plt.hist(az_diff, bins = 100)
