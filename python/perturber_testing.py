@@ -18,6 +18,7 @@ from perturber_func import perturb_geol_interface
 import os
 #windows
 os.chdir("C:/Users/Mark/Cloudstor/EGen/test_data3/output")
+#mac
 
 perturb_geol_interface_uniform(11, 5, DEM = True)
 
@@ -39,6 +40,15 @@ plt.hist(dip_diff, bins = 100)
 plt.show()
 
 #%% Testing fault orientations
+import os
+#windows
+os.chdir("C:/Users/Mark/Cloudstor/EGen/test_data3/output")
+#mac
+os.chdir("/Users/marklindsay/cloudstor/EGen/test_data3/output")
+
+perturb_orient_vMF(10, 100, 5)
+perturb_orient_vMF(10, 100, 5, file_input='faults', loc_distribution='normal', DEM=True)
+
 az_diff = file_fault_orientation["DipDirection"] - new_ori[1]
 dip_diff = file_fault_orientation["dip"] - new_ori[0]
 plt.hist(az_diff, bins = 100)
