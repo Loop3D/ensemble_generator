@@ -19,6 +19,9 @@ import os
 #windows
 os.chdir("C:/Users/Mark/Cloudstor/EGen/test_data3/output")
 #mac
+os.chdir("/Users/marklindsay/cloudstor/EGen/test_data3/output")
+
+
 
 perturb_geol_interface_uniform(11, 5, DEM = True)
 
@@ -46,7 +49,9 @@ os.chdir("C:/Users/Mark/Cloudstor/EGen/test_data3/output")
 #mac
 os.chdir("/Users/marklindsay/cloudstor/EGen/test_data3/output")
 
+from perturber_func import perturb_orient_vMF
 perturb_orient_vMF(10, 100, 5)
+perturb_orient_vMF(10, 100, 5, file_input='faults', loc_distribution='normal', DEM=True)
 perturb_orient_vMF(10, 100, 5, file_input='faults', loc_distribution='normal', DEM=True)
 
 az_diff = file_fault_orientation["DipDirection"] - new_ori[1]

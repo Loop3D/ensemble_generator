@@ -9,39 +9,14 @@ sys.path.append(path.abspath('./python'))
 #windows
 sys.path.append(path.abspath('C:/Users/Mark/Documents/GitHub/Loop3D/map2loop'))
 #mac
-sys.path.append(path.abspath('/Users/marklindsay/Documents/GitHub/Loop3D/map2loop'))
+sys.path.append(path.abspath('/Users/marklindsay/Documents/GitHub/Loop3D/map2loop/map2loop/'))
 
-from map2loop import m2l_utils
+import m2l_utils
 
 # this works but wants me to import all the packages listed in m2l_utils... not sure I want to do that.
-from m2l_utils_egen import \
-    ddd2dircos  # this import can be linked to m2l_utils once these functions are linked i.e. in the same or linked repos
-from m2l_utils_egen import \
-    dircos2ddd  # this import can be linked to m2l_utils once these functions are linked i.e. in the same or linked repos
+from m2l_utils_egen import ddd2dircos  # this import can be linked to m2l_utils once these functions are linked i.e. in the same or linked repos
+from m2l_utils_egen import dircos2ddd  # this import can be linked to m2l_utils once these functions are linked i.e. in the same or linked repos
 from spherical_utils import sample_vMF  # thanks to https://github.com/jasonlaska/spherecluster/
-# from egen_func import sample_vMF
-import m2l_utils_egen
-
-# from jetbrains://pycharm/navigate/reference?project=geol-model-egen&path=python/m2l_utils_egen.py import dd2dircos
-
-# # TODO add this bit to location resampling
-# The function
-#
-# value_from_raster(dataset,locations)
-#
-# in m2l_utils samples a rasterio raster (dataset) at a given xy location (locations)
-#
-# e.g.
-#
-import rasterio
-
-# from map2loop import m2l_utils
-# location=[(x,y)]
-# dtm = rasterio.open(path_to_geotiff)
-# height=m2l_utils.value_from_raster(dtm,location)
-
-# TODO add code to resample orientation locations
-
 
 '''a script that perturbs the data exported from map2loop. This will conducted on the .csv files
 - contacts_clean.csv
@@ -117,8 +92,7 @@ def perturb_interface(samples, error_gps, file_input='contacts', distribution='u
         new_coords.to_csv(file_name)
     return
 
-# TODO finish this thing - errors with the column referencing. check what geomodeller expects
-
+#TODO test the vMF method
 
 def perturb_orient_vMF(samples, error_gps, kappa, file_input='contacts', loc_distribution='uniform', DEM=None):
     # samples is the number of draws, thus the number of models in the ensemble
@@ -128,6 +102,13 @@ def perturb_orient_vMF(samples, error_gps, kappa, file_input='contacts', loc_dis
         input_file = pd.read_csv("fault_orientations.csv")  # load data
     else:
         input_file = pd.read_csv("orientations_clean.csv")  # load data
+
+    # check for incorrect column labels coming from map2loop and rename them
+    if "DipDirection" in list(input_file.columns.values):
+        input_file = input_file.rename(columns={"DipDirection": "azimuth"})
+
+    if "DipPolarity" in list(input_file.columns.values):
+        input_file = input_file.rename(columns={"DipPolarity": "polarity"})
 
     if DEM is True:
         # dtm = rasterio.open("C:/Users/Mark/Cloudstor/EGen/test_data3/dtm/hammersley_sheet_dtm.ers")  # hard path needs to be updated
@@ -150,7 +131,7 @@ def perturb_orient_vMF(samples, error_gps, kappa, file_input='contacts', loc_dis
             for r in range(len(input_file)):
                 start_x = input_file.loc[r, 'X']
                 new_orient.loc[r, 'X'] = dist_func(size=1, loc=start_x - (error_gps), scale=error_gps)  # value error
-                new_orient.loc[r, 'X'] = dist_func(size=1, loc=start_x - (error_gps), scale=error_gps)  # value error
+                # new_orient.loc[r, 'X'] = dist_func(size=1, loc=start_x - (error_gps), scale=error_gps)  # value error
                 start_y = input_file.loc[r, 'Y']
                 new_orient.loc[r, 'Y'] = dist_func(size=1, loc=start_y - (error_gps), scale=error_gps)
                 elevation = m2l_utils.value_from_raster(dtm, [(new_orient.loc[r, 'X'], new_orient.loc[r, 'Y'])])
@@ -177,6 +158,8 @@ def perturb_orient_vMF(samples, error_gps, kappa, file_input='contacts', loc_dis
             new_ori = pd.DataFrame(new_ori)
             new_orient["azimuth"], new_orient["dip"] = new_ori[1], new_ori[0]
 
+        new_orient["polarity"] = input_file["polarity"]
+        new_orient["formation"] = input_file["formation"]
         file_name = file_input + "_" + loc_distribution + "_orientations_" + str(s) + ".csv"
 
         new_orient.to_csv(file_name)
