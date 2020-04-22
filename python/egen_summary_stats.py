@@ -68,15 +68,41 @@ def read_gocad_voxet(directory, type, card=False, ent=False):
 
 
 
-#%%
+#%% export summary stats to voxet
+
+def export_gocad_voxet(dataframe, path, type):
+     '''exports a dataframe to gocad voxet binary
+     'dataframe' is the pandas dataframe to be exported as voxet
+     'path' is the export path
+     'type' is the type of voxet - this defines the export name: "cardinality", "entropy", "probability"'''
+     #write header
+
+     #write binary
+
+
+     coords = np.zeros([int(header.loc[6,1]*header.loc[6,2]*header.loc[6,3]), 3])
+     coords_ref =
+
+def writeCFloat(f, ndarray):
+    np.asarray(ndarray, dtype=np.float32).tofile(f)
+def writeCInt(f, ndarray):
+    np.asarray(ndarray, dtype=np.int32).tofile(f)
+def writeC80(f, string):
+    np.asarray(string, dtype='a80').tofile(f)
+
+if __name__ == "__main__":
+    f = open('test.out', mode='wb')
+    ndarray = np.zeros((10000,10000))
+
+    writeCInt(f, ndarray)
+    writeCFloat(f, ndarray)
+    writeC80(f, 'coordinates')
+
+#%% visualisation (put in different py file)
+
+
+
 #
-# def export_gocad_voxet(dataframe, path, type):
-#     '''exports a dataframe to gocad voxet binary
-#     'dataframe' is the pandas dataframe to be exported as voxet
-#     'path' is the export path
-#     'type' is the type of voxet - this defines the export name: "cardinality", "entropy", "probability"'''
-#     coords = np.zeros([int(header.loc[6,1]*header.loc[6,2]*header.loc[6,3]), 3])
-#     coords_ref =
 
 
 #
