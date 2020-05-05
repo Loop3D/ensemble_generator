@@ -41,11 +41,13 @@ from m2l_export import loop2geomodeller
 
 
 #%%
-
+import egen_func
 #Windows
-egen_func.egen_paths(geomodeller = r"C:\GeoModeller\GeoModeller4.0.8_x64_88b64e610d9" , model = r"C:/Users/Mark/Cloudstor/EGen/test_data3/")
+#path must not have '/' at the end
+egen_func.egen_paths(geomodeller = r"C:\GeoModeller\GeoModeller4.0.8_x64_88b64e610d9" , model = r"C:/Users/Mark/Cloudstor/EGen/test_data3")
 egen_func.egen_calc_original('model_0.task')
-
+egen_func.egen_orig_model_voxets(30, 30, 30, litho=True)
+egen_func.egen_create_batch('model_0_voxet.task', 'model_1_voxet.task', 'model_2_voxet.task', 'model_3_voxet.task', 'model_4_voxet.task', 'model_5_voxet.task')
 test_data_name='test_data3'
 
 test_data_path='C:/Users/Mark/Cloudstor/EGen/test_data3'
@@ -71,7 +73,7 @@ bbox=(minx,miny,maxx,maxy,model_top,model_base) #
 import m2l_export_egen as egen
 
 
-egen.l2gm_ensemble(2, 'C:/Users/Mark/Cloudstor/EGen/test_data3', './tmp/', './output/', './dtm/dtm_rp.tif', save_faults = True)
+egen.l2gm_ensemble(11, 'C:/Users/Mark/Cloudstor/EGen/test_data3', './tmp/', './output/', './dtm/dtm_rp.tif', save_faults = True)
 
 # debug parameters
 samples = 1
@@ -82,3 +84,23 @@ dtm_file = './dtm/dtm_rp.tif'
 #bbox
 save_faults = True
 compute_etc = True
+
+#%% calc_voxet_ensemble testing
+
+import egen_func
+import os, glob
+
+# debug args
+model_path = 'C:/Users/Mark/Cloudstor/EGen/test_data3'
+path = test_data_path
+nx = 25
+ny = 25
+nz = 25
+model_from = 0
+model_to = 10
+litho = True
+scalar=None
+scalar_grads=None
+
+egen_func.calc_voxet_ensemble(model_path, 25, 25, 25, litho = True)
+egen_func.egen_create_batch('model_0_voxet.task', 'model_1_voxet.task', 'model_2_voxet.task', 'model_3_voxet.task', 'model_4_voxet.task', 'model_5_voxet.task')
