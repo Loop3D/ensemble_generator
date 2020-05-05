@@ -56,9 +56,9 @@ def egen_xml_to_task(model_name):
     return
 
 
-def egen_calc_original():
+def egen_calc_original(model_name):
     '''calculate original model'''
-    orig_task = open(f'{path_output}/calc_orig_model.task', "w")
+    orig_task = open(f'{path_output}/{model_name}', "w")
     task = '''GeomodellerTask {
     OpenProjectNoGUI {
         filename: "%s/%s"
