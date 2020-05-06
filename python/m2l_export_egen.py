@@ -9,7 +9,6 @@ import pyproj
 # set global vars
 
 
-
 ##########################################################################
 # Save out and compile taskfile needed to generate geomodeller model using the geomodellerbatch engine
 #
@@ -34,22 +33,45 @@ import pyproj
 # TODO bug fault foliations are not being imported (file headers/format incorrect?)
 # TODO check - are all the other data being input?
 # TODO add ability for samples to be a range e.g. 1-50, 51-100, etc. and then run on multiple cores for fastering
+
+'''interpolation params include:
+range = kriging range (float)
+interface = nugget effect on interface data (float): smaller numbers = higher adherance to data, lower equals smoother
+orientation = nugget effect on interface data (float): smaller numbers = higher adherance to data, lower equals smoother
+drift = drift degree (int) Drift degree (0, 1 or 2): Defines the order or degree of the ‘trend’ in the data for extrapolation of the structural data.
+        0 no drift, no predefined trend.
+        1 linear drift, tendency to planar.
+        2 quadratic drift, tendency towards parabolic
+'''
+
+
 ##########################################################################
-def l2gm_ensemble(samples, model_path, tmp_path, output_path, dtm_file, save_faults):
+def l2gm_ensemble(model_from, model_to, model_path, tmp_path, output_path, dtm_file, save_faults, krig_range=None, interface=None, orientation=None, drift=None):
     # run project parameters file
-    os.chdir(model_path) # path defined by egen_paths function
-    exec(open("egen_config.py").read()) # this assumes model is coming from map2loop, can make another for those comign from geomodeller (e.g. via xml parser)
+    os.chdir(model_path)  # path defined by egen_paths function
+    exec(open(
+        "egen_config.py").read())  # this assumes model is coming from map2loop, can make another for those comign from geomodeller (e.g. via xml parser)
     crs = pyproj.CRS.from_epsg(''.join([i for i in dst_crs['init'] if i.isdigit()]))  # m2l naming dependency = dst_crs
     bbox = (minx, miny, maxx, maxy, model_top, model_base)  # m2l naming dependency = minx, miny, maxx, maxy, model_top, model_bottom
+
     if not os.path.exists("./tasks"):
         os.makedirs("./tasks")
     if not os.path.exists("./ensemble"):
         os.makedirs("./ensemble")
 
-    for s in range(samples):
+    if 'model_from' != locals():
+        model_from = 0
+    if 'model_to' != locals():
+        model_to = 1
+    if model_from is None:
+        model_from = 0
+    if model_to is None:
+        model_to = 1
+
+    for s in range(model_from, model_to):
         loctime = time.localtime(time.time())
 
-        f = open(model_path + '/tasks/model_' + str(s) + '.task', 'w')
+        f = open(model_path + '/model_' + str(s) + '.task', 'w')
         f.write('#---------------------------------------------------------------\n')
         f.write('#-----------------------Project Header-----------------------\n')
         f.write('#---------------------------------------------------------------\n')
@@ -59,7 +81,9 @@ def l2gm_ensemble(samples, model_path, tmp_path, output_path, dtm_file, save_fau
         f.write('    CreateProject {\n')
         f.write('        name: "model"\n')
         f.write('        author: "modeller"\n')
-        f.write('        date: "' + str(loctime.tm_mday) + '/' + str(loctime.tm_mon) + '/' + str(loctime.tm_year) + ' ' + str(loctime.tm_hour) + ':' + str(loctime.tm_min) + ':' + str(loctime.tm_sec) + '"\n')
+        f.write('        date: "' + str(loctime.tm_mday) + '/' + str(loctime.tm_mon) + '/' + str(
+            loctime.tm_year) + ' ' + str(loctime.tm_hour) + ':' + str(loctime.tm_min) + ':' + str(
+            loctime.tm_sec) + '"\n')
         f.write('        projection { map_projection: "' + crs.name + '"}\n')
         f.write('        version: "1.0"\n')
         f.write('        units: meters\n')
@@ -94,7 +118,7 @@ def l2gm_ensemble(samples, model_path, tmp_path, output_path, dtm_file, save_fau
         f.write('}\n')
 
         orientations = pd.read_csv(output_path + f'contacts_orient_' + str(s) + '.csv', ',')
-        contacts = pd.read_csv(output_path + 'contacts_'  + str(s) + '.csv', ',')
+        contacts = pd.read_csv(output_path + 'contacts_' + str(s) + '.csv', ',')
         all_sorts = pd.read_csv(tmp_path + 'all_sorts_clean.csv', ',')
 
         empty_fm = []
@@ -181,7 +205,7 @@ def l2gm_ensemble(samples, model_path, tmp_path, output_path, dtm_file, save_fau
                             f.write('}\n')
 
         if (save_faults):
-            #output_path = test_data_path + 'output/'
+            # output_path = test_data_path + 'output/'
 
             faults_len = pd.read_csv(output_path + 'fault_dimensions.csv')
 
@@ -220,7 +244,7 @@ def l2gm_ensemble(samples, model_path, tmp_path, output_path, dtm_file, save_fau
         f.write('#-----------------------Import 3D contact data ---Base Model----\n')
         f.write('#---------------------------------------------------------------\n')
 
-        contacts = pd.read_csv(output_path + 'contacts_'  + str(s) + '.csv', ',')
+        contacts = pd.read_csv(output_path + 'contacts_' + str(s) + '.csv', ',')
         all_sorts = pd.read_csv(tmp_path + 'all_sorts_clean.csv', ',')
         # all_sorts.set_index('code',  inplace = True)
         # display(all_sorts)
@@ -234,7 +258,8 @@ def l2gm_ensemble(samples, model_path, tmp_path, output_path, dtm_file, save_fau
 
                 for indx2, acontact in contacts.iterrows():
                     if (acontact['formation'] in afm['code']):
-                        ostr = '              point {x:' + str(acontact['X']) + '; y:' + str(acontact['Y']) + '; z:' + str(
+                        ostr = '              point {x:' + str(acontact['X']) + '; y:' + str(
+                            acontact['Y']) + '; z:' + str(
                             acontact['Z']) + '}\n'
                         f.write(ostr)
                 f.write('    }\n')
@@ -243,7 +268,7 @@ def l2gm_ensemble(samples, model_path, tmp_path, output_path, dtm_file, save_fau
         f.write('#------------------Import 3D orientation data ---Base Model-----\n')
         f.write('#---------------------------------------------------------------\n')
 
-        orientations = pd.read_csv(output_path + 'contacts_orient_'  + str(s) + '.csv', ',')
+        orientations = pd.read_csv(output_path + 'contacts_orient_' + str(s) + '.csv', ',')
         all_sorts = pd.read_csv(tmp_path + 'all_sorts_clean.csv', ',')
         # all_sorts.set_index('code',  inplace = True)
         # display(all_sorts)
@@ -278,7 +303,7 @@ def l2gm_ensemble(samples, model_path, tmp_path, output_path, dtm_file, save_fau
         f.write('#-----------------------Import 3D fault data ---Base Model------\n')
         f.write('#---------------------------------------------------------------\n')
 
-        fault_contacts = pd.read_csv(output_path + 'faults_'  + str(s) + '.csv', ',')
+        fault_contacts = pd.read_csv(output_path + 'faults_' + str(s) + '.csv', ',')
         faults = pd.read_csv(output_path + 'fault_dimensions.csv', ',')
 
         for indx, afault in faults.iterrows():
@@ -384,7 +409,47 @@ def l2gm_ensemble(samples, model_path, tmp_path, output_path, dtm_file, save_fau
 
             f.write('    }\n')
             f.write('}\n')
+        ####
+        # Calculate model
 
+        # assign default parameters
+
+        if krig_range is None:
+            krig_range = 10000.0
+        if interface is None:
+            interface = 0.000001
+        if orientation is None:
+            orientation = 0.01
+        if drift is None:
+            drift = 1
+        series_list = all_sorts.group.unique()
+
+        calc_model_str1 = f'''\n
+GeomodellerTask {{
+    ComputeModel {{
+        SeriesList {{
+            node: "all" }}
+        SectionList {{
+            node: "all" }}'''
+        f.write(calc_model_str1)
+
+        for ss in range(len(series_list)):
+            calc_model_str2 = f'''
+        SeriesInterpolationParameters {{
+            series: {series_list[ss]}
+            Range: {krig_range}
+            Contacts_Nugget_Effect: {interface}
+            Gradients_Nugget_Effect: {orientation}
+            FaultDriftEquationDegree: {drift} }}'''
+        f.write(calc_model_str2)
+
+        calc_model_str3 = f'''
+    }}
+}}\n
+'''
+        f.write(calc_model_str3)
+#TODO test this bit
+        ####
         f.write('GeomodellerTask {\n')
         f.write('    SaveProjectAs {\n')
         f.write('        filename: "' + model_path + '/ensemble/model_' + str(s) + '.xml"\n')
@@ -392,11 +457,8 @@ def l2gm_ensemble(samples, model_path, tmp_path, output_path, dtm_file, save_fau
         f.write('}\n')
         f.close()
 
+    # from pyamg import solve
 
-
-    #from pyamg import solve
-
-
-    #def solve_pyamg(A, B):
+    # def solve_pyamg(A, B):
     #    return solve(A, B, verb=False, tol=1e-8)
     return

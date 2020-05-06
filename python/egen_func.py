@@ -159,11 +159,23 @@ def egen_create_batch(*tasks): # need to fix how the tasks args can be added to 
     batch = f"SET PATH=%PATH%;{path_geomodeller1}\n"
     for i in range(0, len(tasks)):
         batch = batch + "geomodellerbatch " + tasks[i] + "\n"
-    egen_batch = open(f'{path_model}/tasks/egen_batch.bat', "w")
+    egen_batch = open(f'{path_model}/egen_batch.bat', "w")
     egen_batch.write(batch)
     egen_batch.close()
     return
 
+def egen_create_voxet_ensemble_batch(samples): # need to fix how the tasks args can be added to the batch without explicit indexing
+    '''create batch file .bat for windows for correct sequence of task file execution'''
+    # create a switch for linux - .sh and path setting will be different
+    task_list = [None] * samples * 2 # '2' because we are creating task entries for 1) model_n.task and 2) model_n_voxet.task
+
+    batch = f"SET PATH=%PATH%;{path_geomodeller1}\n"
+    for i in range(samples):
+        batch = batch + "geomodellerbatch model_" + str(i) + "_voxet.task\n"
+    egen_batch = open(f'{path_model}/ensemble/egen_voxet_ensemble_batch.bat', "w")
+    egen_batch.write(batch)
+    egen_batch.close()
+    return
 
 def egen_MC_cokrig_params(range = None, interface = None, orientation = None, drift = None):
     '''set model interpolation parameters using cokriging'''
@@ -218,7 +230,7 @@ def calc_voxet_ensemble(model_path, nx, ny, nz, model_from = None, model_to = No
     model_from, model_to = options here for splitting the ensemble into group for calc on multiple cores
     litho, scalar, scalar_grads = None. Set to 'True' to boolean to export litho, scalar
      scalar gradient voxets (gocad binary format).'''
-    task_path = model_path + "/tasks"
+    task_path = model_path
     ensemble_path = model_path + "/ensemble"
     os.chdir(model_path)
     if not os.path.exists("./voxets"):
