@@ -77,9 +77,17 @@ bbox=(minx,miny,maxx,maxy,model_top,model_base) #
 
 
 import m2l_export_egen as egen
+series_c = (['Turee_Creek_Group', 'Hamersley_Group', 'Fortescue_Group'])
+
+# series_c selection
+egen.l2gm_ensemble('C:/Users/Mark/Cloudstor/EGen/test_data3', './tmp/', './output/', './dtm/dtm_rp.tif', save_faults = True, model_from=0, model_to=2, series_calc=series_c)
+# series_c selection, models 5-10
+egen.l2gm_ensemble('C:/Users/Mark/Cloudstor/EGen/test_data3', './tmp/', './output/', './dtm/dtm_rp.tif', save_faults = True, model_from=5, model_to=10, series_calc=series_c)
+
+#all series
+egen.l2gm_ensemble('C:/Users/Mark/Cloudstor/EGen/test_data3', './tmp/', './output/', './dtm/dtm_rp.tif', save_faults = True)
 
 
-egen.l2gm_ensemble(0, 2, 'C:/Users/Mark/Cloudstor/EGen/test_data3', './tmp/', './output/', './dtm/dtm_rp.tif', save_faults = True)
 
 # debug parameters
 samples = 1
@@ -111,3 +119,17 @@ scalar_grads=None
 
 egen_func.calc_voxet_ensemble(model_path, 25, 25, 25, litho = True)
 egen_func.egen_create_batch('model_0_voxet.task', 'model_1_voxet.task', 'model_2_voxet.task', 'model_3_voxet.task', 'model_4_voxet.task', 'model_5_voxet.task')
+
+#%%
+
+def test_func(model_from=None, model_to=None):
+    if model_from is None:
+        model_from = 2
+    if model_to is None:
+        model_to = 22
+    print('model from:' + str(model_from))
+    print('model_to:' + str(model_to))
+
+test_func(1, 10)
+test_func()
+

@@ -6,6 +6,8 @@ import time
 import os
 import pyproj
 
+
+
 # set global vars
 
 
@@ -29,13 +31,14 @@ import pyproj
 # 3. author - generic atm
 # 4. projection
 
-# TODO remove calculate model at the end (i have a function for that)
-# TODO bug fault foliations are not being imported (file headers/format incorrect?)
+
 # TODO check - are all the other data being input?
 # TODO add ability for samples to be a range e.g. 1-50, 51-100, etc. and then run on multiple cores for fastering
-
+# TODO the args need to come from an experiement/par file - use a .py or something
 '''interpolation params include:
-range = kriging range (float)
+
+series_calc =  which series to compute - default = all
+krig_range = kriging range (float)
 interface = nugget effect on interface data (float): smaller numbers = higher adherance to data, lower equals smoother
 orientation = nugget effect on interface data (float): smaller numbers = higher adherance to data, lower equals smoother
 drift = drift degree (int) Drift degree (0, 1 or 2): Defines the order or degree of the ‘trend’ in the data for extrapolation of the structural data.
@@ -46,7 +49,7 @@ drift = drift degree (int) Drift degree (0, 1 or 2): Defines the order or degree
 
 
 ##########################################################################
-def l2gm_ensemble(model_from, model_to, model_path, tmp_path, output_path, dtm_file, save_faults, krig_range=None, interface=None, orientation=None, drift=None):
+def l2gm_ensemble(model_path, tmp_path, output_path, dtm_file, save_faults, model_from=None, model_to=None, series_calc=None, krig_range=None, interface=None, orientation=None, drift=None):
     # run project parameters file
     os.chdir(model_path)  # path defined by egen_paths function
     exec(open(
@@ -59,10 +62,6 @@ def l2gm_ensemble(model_from, model_to, model_path, tmp_path, output_path, dtm_f
     if not os.path.exists("./ensemble"):
         os.makedirs("./ensemble")
 
-    if 'model_from' != locals():
-        model_from = 0
-    if 'model_to' != locals():
-        model_to = 1
     if model_from is None:
         model_from = 0
     if model_to is None:
@@ -412,8 +411,14 @@ def l2gm_ensemble(model_from, model_to, model_path, tmp_path, output_path, dtm_f
         ####
         # Calculate model
 
-        # assign default parameters
 
+
+        # assign default parameters
+        if series_calc is None:
+            series_c = "all"
+            series_list = all_sorts.group.unique()
+        else:
+            series_list = series_calc
         if krig_range is None:
             krig_range = 10000.0
         if interface is None:
@@ -422,33 +427,39 @@ def l2gm_ensemble(model_from, model_to, model_path, tmp_path, output_path, dtm_f
             orientation = 0.01
         if drift is None:
             drift = 1
-        series_list = all_sorts.group.unique()
 
         calc_model_str1 = f'''\n
 GeomodellerTask {{
     ComputeModel {{
-        SeriesList {{
-            node: "all" }}
+        SeriesList {{'''
+        f.write(calc_model_str1)
+
+        for sc in range(len(series_list)):
+            calc_model_str_series_calc = f'''
+            node: "{series_list[sc]}"'''
+            f.write(calc_model_str_series_calc)
+
+        calc_model_str_section_list = f'''}}
         SectionList {{
             node: "all" }}'''
-        f.write(calc_model_str1)
+        f.write(calc_model_str_section_list)
 
         for ss in range(len(series_list)):
             calc_model_str2 = f'''
         SeriesInterpolationParameters {{
-            series: {series_list[ss]}
+            series: "{series_list[ss]}"
             Range: {krig_range}
             Contacts_Nugget_Effect: {interface}
             Gradients_Nugget_Effect: {orientation}
             FaultDriftEquationDegree: {drift} }}'''
-        f.write(calc_model_str2)
+            f.write(calc_model_str2)
 
         calc_model_str3 = f'''
     }}
 }}\n
 '''
         f.write(calc_model_str3)
-#TODO test this bit
+
         ####
         f.write('GeomodellerTask {\n')
         f.write('    SaveProjectAs {\n')
