@@ -2,6 +2,7 @@ import egen_func as ef
 import perturber_func as pf
 import m2l_export_egen as ex
 import multiprocessing as mp
+import stats_utils
 import time
 
 def run_egen(par_file=None):
@@ -23,16 +24,19 @@ def run_egen(par_file=None):
     # uses parallel processing for speed
     num_cores = mp.cpu_count()
     use_cores = int(num_cores*.8)
-
-    # TODO split process into use_cores blocks
+    egen_runs = 100
+    # TODO create model_to and model_from starting numbers
     # single processing at the moment (boring)
     egen_l2gm = f'''ex.l2gm_ensemble('{path_to_model}', './tmp/', './output/', './dtm/{DTM_name}', save_faults = {save_faults}, model_from=0, model_to={egen_runs}, series_calc={series_c})'''
 
     # Step 5 - compute models and export voxets
 
-    pool_split = int(use_cores/egen_runs)
-    pool_remainder = egen_runs%use_cores
-    # TODO deal with accommodating the remainder into the for loop range
+    pool_split = stats_utils.split(egen_runs, use_cores)
+    for i in range(use_cores):
 
+
+
+
+    block1 = {0,16}
     for i in range()
     calc_models_voxets = f'''ef.calc_voxet_ensemble('{path_to_model}, {nx}, {ny}, {nz}, model_from'''
