@@ -9,10 +9,17 @@ path_to_geomodeller =
 path_to_model =
 
 #############################
+#           Files           #
+#############################
+
+DTM_name =  #, just the filename, not the path, includes file extension
+
+#############################
 #       Ensemble par        #
 #############################
 
-egen_runs = 1
+egen_runs =
+save_faults =  # True/False: do we want faults included?
 
 #############################
 #       Voxet parameters    #
@@ -34,7 +41,7 @@ nz =
 # interface
 error_gps =
 distribution =
-
+DEM =
 # orientations
 kappa =
 error_gps =

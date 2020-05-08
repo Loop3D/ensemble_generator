@@ -6,10 +6,7 @@ import time
 import os
 import pyproj
 
-
-
 # set global vars
-
 
 ##########################################################################
 # Save out and compile taskfile needed to generate geomodeller model using the geomodellerbatch engine
@@ -25,15 +22,15 @@ import pyproj
 #
 # Creates geomodeller taskfile files from varous map2loop outputs
 
-# TODO remove hard-coded labels/names and extract from xml or define as generic default
-# 1. name (UWA_Intrepid) - generic atm
-# 2. name (Hamersley) - generic atm
+# labels defined as generic
+# 1. name (was UWA_Intrepid) - generic atm
+# 2. name (was Hamersley) - generic atm
 # 3. author - generic atm
-# 4. projection
+
 
 
 # TODO check - are all the other data being input?
-# TODO add ability for samples to be a range e.g. 1-50, 51-100, etc. and then run on multiple cores for fastering
+
 # TODO the args need to come from an experiement/par file - use a .py or something
 '''interpolation params include:
 
@@ -50,6 +47,7 @@ drift = drift degree (int) Drift degree (0, 1 or 2): Defines the order or degree
 
 ##########################################################################
 def l2gm_ensemble(model_path, tmp_path, output_path, dtm_file, save_faults, model_from=None, model_to=None, series_calc=None, krig_range=None, interface=None, orientation=None, drift=None):
+    start_time = time.time()
     # run project parameters file
     os.chdir(model_path)  # path defined by egen_paths function
     exec(open(
@@ -472,4 +470,7 @@ GeomodellerTask {{
 
     # def solve_pyamg(A, B):
     #    return solve(A, B, verb=False, tol=1e-8)
+    end_time = time.time()
+    wall_time = end_time - start_time)/60
+    logfile = f'This took " + str((end_time - start_time)/60) + " minutes")
     return
