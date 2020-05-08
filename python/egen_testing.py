@@ -76,13 +76,25 @@ bbox=(minx,miny,maxx,maxy,model_top,model_base) #
 #loop2geomodeller(model + "output/", model + "tmp/", )
 
 # timing the function
-#import timeit
+import multiprocessing as mp
 
 import m2l_export_egen as egen
 series_c = (['Turee_Creek_Group', 'Hamersley_Group', 'Fortescue_Group'])
 
-# series_c selection
 egen.l2gm_ensemble('C:/Users/Mark/Cloudstor/EGen/test_data3', './tmp/', './output/', './dtm/dtm_rp.tif', save_faults = True, model_from=0, model_to=5, series_calc=series_c)
+
+# series_c selection
+pool = mp.Pool()
+start_time = time.time()
+pool.map(egen.l2gm_ensemble('C:/Users/Mark/Cloudstor/EGen/test_data3', './tmp/', './output/', './dtm/dtm_rp.tif', save_faults = True, model_from=0, model_to=5, series_calc=series_c))
+print(time.time() - start_time))
+pool.close()
+
+#
+p1 = mp.Process(target=egen.l2gm_ensemble('C:/Users/Mark/Cloudstor/EGen/test_data3', './tmp/', './output/', './dtm/dtm_rp.tif', save_faults = True, model_from=0, model_to=5, series_calc=series_c))
+p1.start()
+p2 = mp.Process(target=egen.l2gm_ensemble('C:/Users/Mark/Cloudstor/EGen/test_data3', './tmp/', './output/', './dtm/dtm_rp.tif', save_faults = True, model_from=6, model_to=10, series_calc=series_c))
+p2.start()
 
 # timeit.timeit(egen.l2gm_ensemble('C:/Users/Mark/Cloudstor/EGen/test_data3', './tmp/', './output/', './dtm/dtm_rp.tif', save_faults = True, model_from=0, model_to=5, series_calc=series_c))
 # series_c selection, models 5-10

@@ -471,6 +471,6 @@ GeomodellerTask {{
     # def solve_pyamg(A, B):
     #    return solve(A, B, verb=False, tol=1e-8)
     end_time = time.time()
-    wall_time = end_time - start_time)/60
-    logfile = f'This took " + str((end_time - start_time)/60) + " minutes")
+    wall_time = (end_time - start_time)/60
+    #logfile = f'This took " + str((end_time - start_time)/60) + " minutes")
     return
