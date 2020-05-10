@@ -14,22 +14,23 @@ dircos2ddd(l,m,n)
 check_file_orient = file_orient[["azimuth", "dip"]].join(new_ori)
 
 #%% Testing contact orientations
-from perturber_func import perturb_geol_interface
+from perturber_func import perturb_interface
+from perturber_func import perturb_orient_vMF
 import os
 #windows
 os.chdir("C:/Users/Mark/Cloudstor/EGen/test_data3/output")
-#mac
-os.chdir("/Users/marklindsay/cloudstor/EGen/test_data3/output")
 
+#perturb_interface(10, 5, DEM = True)
 
+#perturb_geol_interface(11, 5, DEM = True)
+#perturb_geol_interface(11, 5, distribution='normal', DEM = True)
+perturb_interface(11, 5, file_type="contacts", distribution="normal", DEM=True)
+perturb_interface(11, 5, file_type="faults", distribution="normal", DEM=True)
 
-perturb_geol_interface_uniform(11, 5, DEM = True)
+perturb_orient_vMF(11, 50, 5, file_type='contacts', loc_distribution='uniform', DEM=True)
+perturb_orient_vMF(11, 50, 5, file_type='faults', loc_distribution='normal', DEM=True)
 
-perturb_geol_interface(11, 5, DEM = True)
-perturb_geol_interface(11, 5, distribution='normal', DEM = True)
-perturb_geol_interface(11, 5, file_input="faults", distribution="normal", DEM=True)
-
-orig, new = perturb_geol_interface(1, 5, distribution='normal', DEM = True)
+orig, new = perturb_geol_interface(1, 50, 5, distribution='normal', DEM = True)
 
 diff_x = orig["X"] - new["X"]
 plt.hist(diff_x)
@@ -43,17 +44,6 @@ plt.hist(dip_diff, bins = 100)
 plt.show()
 
 #%% Testing fault orientations
-import os
-#windows
-os.chdir("C:/Users/Mark/Cloudstor/EGen/test_data3/output")
-#mac
-os.chdir("/Users/marklindsay/cloudstor/EGen/test_data3/output")
-
-from perturber_func import perturb_orient_vMF
-perturb_orient_vMF(10, 100, 5)
-perturb_orient_vMF(10, 100, 5, file_input='faults', loc_distribution='normal', DEM=True)
-perturb_orient_vMF(10, 100, 5, file_input='faults', loc_distribution='normal', DEM=True)
-
 az_diff = file_fault_orientation["DipDirection"] - new_ori[1]
 dip_diff = file_fault_orientation["dip"] - new_ori[0]
 plt.hist(az_diff, bins = 100)

@@ -43,6 +43,39 @@ def litho_probabilites(array):
     litho_prob = litho_prob / array.shape[1]
     return(litho_prob)
 
+#%%
+# group splitter
+
+
+def split(x, n):
+    # If we cannot split the
+    # number into exactly 'N' parts
+    if (x < n):
+        return -1
+
+    # If x % n == 0 then the minimum
+    # difference is 0 and all
+    # numbers are x / n
+    elif (x % n == 0):
+        temp = np.zeros(n)
+        for i in range(n):
+            temp[i] = x // n
+        return temp
+    else:
+        # upto n-(x % n) the values
+        # will be x / n
+        # after that the values
+        # will be x / n + 1
+        temp = np.zeros(n)
+        zp = n - (x % n)
+        pp = x // n
+        for i in range(n):
+            if (i >= zp):
+                temp[i] = pp + 1
+            else:
+                temp[i] = pp
+
+        return temp
 
 
 
