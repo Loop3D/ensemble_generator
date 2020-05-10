@@ -5,6 +5,9 @@ import multiprocessing as mp
 import stats_utils
 import time
 
+# debug
+import numpy as np
+
 def run_egen(par_file=None):
     #load Egen_par.py
     exec(open("EGen_par.py").read())
@@ -32,10 +35,13 @@ def run_egen(par_file=None):
     # Step 5 - compute models and export voxets
 
     pool_split = stats_utils.split(egen_runs, use_cores)
+    pool = np.arange(0, egen_runs)
+    pool_list = list([])
     for i in range(use_cores):
+        pool_list.append(pool[:int(pool_split[i])])
+        pool = pool[int(pool_split[i]):]
 
-
-
+    lst = lst[:len(lst) - n]
 
     block1 = {0,16}
     for i in range()
