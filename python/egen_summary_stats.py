@@ -8,7 +8,7 @@ from stats_utils import entropy_custom
 
 #%%
 
-def read_gocad_voxet(directory, type, card=False, ent=False):
+def stats_gocad_voxet(directory, type, model_name, card=False, ent=False, export=True):
     # i want to specify the voxet name too, but first let's test just using the directory name
     #type = c("Card_VOXET", "Entropy_VOXET", "Frequency_VOXET", "OLS_VOXET", "P1_VOXET", "GOCAD_LITHO")
     # this function imports voxets that are output by Geomodeller and related CURE (Common Uncertainty Research Explorer).
@@ -24,16 +24,68 @@ def read_gocad_voxet(directory, type, card=False, ent=False):
     # generate list of voxet header files to import
     h_pattern = pattern_a + pattern + "*.vo"
     header_file = glob.glob(h_pattern)
+
     if len(header_file) != 0:
         # this reads the first file listed from the dir() operation, but I don't like it much. I'd prefer to specify
         # the header explicitly, but I can't seem to get the regex within the pattern arg working properly
         # "Frequency_VOXET.vo\W" works in the regex util, but not in R... who knows.
-        header = pd.read_csv(header_file[0], header = None, sep=" ", skiprows=4, nrows=8)
+
+        # gocad header voxets have varying number of columns down the file. This process
+        # dynamically generates the number of columns so the head can be imported as a csv
+
+        # The max column count a line in the file could have
+        largest_column_count = 0
+
+        with open(header_file[0], 'r') as temp_h:
+            # read lines
+            lines = temp_h.readlines()
+
+            for l in lines:
+                # Count the column count for the current line
+                column_count = len(l.split(' ')) + 1
+
+                # Set the new most column count
+                largest_column_count = column_count if largest_column_count < column_count else largest_column_count
+
+        #Close the file
+        temp_h.close()
+
+        # Generate column names (will be 0, 1, 2, ..., largest_column_count - 1)
+        column_names = [i for i in range(0, largest_column_count)]
+
+        # Read csv
+        full_header = pd.read_csv(header_file[0], header=None, delimiter=" ", names=column_names)
+
+        #full_header = pd.read_csv(header_file[0], header=None, sep=" ")
+        header = pd.read_csv(header_file[0], header=None, sep=" ", skiprows=4, nrows=8)
         header_units = pd.read_csv(header_file[0], header=None, sep=" ", skiprows=13, nrows=1)
     else:
         print("Unknown voxet type: please enter voxet filename without the file extention")
         sys.exit()
 
+    # create file names for export
+    card_file_name = model_name + '_card'
+    ent_file_name = model_name + '_entropy'
+
+    #create headers for different exports
+    card_header = full_header.copy(deep=True) # interesting - need to do a deep copy. Normal copy will produce a new dataframe linked to the orginal. Changes to the original will be reflected in the copies.
+    ent_header = full_header.copy(deep=True) # interesting - need to do a deep copy. Normal copy will produce a new dataframe linked to the orginal. Changes to the original will be reflected in the copies.
+
+    # format header info - cardinality
+    card_header.loc[2, 1] = card_file_name
+    card_header.loc[15, 2] = "'Cardinality'"
+    card_header.loc[16, 2] = "'Cardinality'"
+    card_header.loc[17, 2] = "'Cardinality'"
+    card_header.loc[18, 2] = "'Cardinality'"
+    card_header.loc[24, 2] = card_file_name + '.vop1'
+
+    # format header info - entropy
+    ent_header.loc[2, 1] = ent_file_name
+    ent_header.loc[15, 2] = "'Entropy'"
+    ent_header.loc[16, 2] = "'Entropy'"
+    ent_header.loc[17, 2] = "'Entropy'"
+    ent_header.loc[18, 2] = "'Entropy'"
+    ent_header.loc[24, 2] = ent_file_name + '.vop1'
 
     #list the voxet property binary files to import
     # generate list of voxet header files to import
@@ -59,10 +111,18 @@ def read_gocad_voxet(directory, type, card=False, ent=False):
     # simple operation - how many unique values in each row.
     if card is True:
         card = litho_df.nunique(1)
+        if export is True:
+            card_export = np.array(card, '>f4')
+            card_export.tofile(card_file_name + '.vop1')
+            card_header.to_csv(card_file_name + ".vo", sep=" ", na_rep="", header=False, index=False)
 
     #calculate entropy
     if ent is True:
         ent = litho_df.apply(entropy_custom, axis=1)
+        if export is True:
+            ent_export = np.array(ent, '>f4')
+            ent_export.tofile(ent_file_name + '.vop1')
+            ent_header.to_csv(ent_file_name + ".vo", sep=" ", na_rep="", header=False, index=False)
 
     return litho_df, card, ent
 
@@ -70,33 +130,33 @@ def read_gocad_voxet(directory, type, card=False, ent=False):
 
 #%% export summary stats to voxet
 
-def export_gocad_voxet(dataframe, path, type):
-     '''exports a dataframe to gocad voxet binary
-     'dataframe' is the pandas dataframe to be exported as voxet
-     'path' is the export path
-     'type' is the type of voxet - this defines the export name: "cardinality", "entropy", "probability"'''
-     #write header
-
-     #write binary
-
-
-     coords = np.zeros([int(header.loc[6,1]*header.loc[6,2]*header.loc[6,3]), 3])
-     coords_ref =
-
-def writeCFloat(f, ndarray):
-    np.asarray(ndarray, dtype=np.float32).tofile(f)
-def writeCInt(f, ndarray):
-    np.asarray(ndarray, dtype=np.int32).tofile(f)
-def writeC80(f, string):
-    np.asarray(string, dtype='a80').tofile(f)
-
-if __name__ == "__main__":
-    f = open('test.out', mode='wb')
-    ndarray = np.zeros((10000,10000))
-
-    writeCInt(f, ndarray)
-    writeCFloat(f, ndarray)
-    writeC80(f, 'coordinates')
+# def export_gocad_voxet(dataframe, path, type):
+#      '''exports a dataframe to gocad voxet binary
+#      'dataframe' is the pandas dataframe to be exported as voxet
+#      'path' is the export path
+#      'type' is the type of voxet - this defines the export name: "cardinality", "entropy", "probability"'''
+#      #write header
+#
+#      #write binary
+#
+#
+#      coords = np.zeros([int(header.loc[6,1]*header.loc[6,2]*header.loc[6,3]), 3])
+#      coords_ref =
+#
+# def writeCFloat(f, ndarray):
+#     np.asarray(ndarray, dtype=np.float32).tofile(f)
+# def writeCInt(f, ndarray):
+#     np.asarray(ndarray, dtype=np.int32).tofile(f)
+# def writeC80(f, string):
+#     np.asarray(string, dtype='a80').tofile(f)
+#
+# if __name__ == "__main__":
+#     f = open('test.out', mode='wb')
+#     ndarray = np.zeros((10000,10000))
+#
+#     writeCInt(f, ndarray)
+#     writeCFloat(f, ndarray)
+#     writeC80(f, 'coordinates')
 
 #%% visualisation (put in different py file)
 

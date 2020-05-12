@@ -72,7 +72,7 @@ def perturb_interface(samples, error_gps, file_type='contacts', distribution='un
     params_file.write("distribution," + distribution + "\n")
     params_file.write("DEM," + str(DEM) + "\n")
     params_file.close()
-
+    # todo navigate to data directory (should be {model_dir}/output
     if file_type == 'faults':
         input_file = pd.read_csv("faults.csv")  # load data
     else:

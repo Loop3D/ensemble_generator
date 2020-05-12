@@ -149,3 +149,29 @@ def test_func(model_from=None, model_to=None):
 test_func(1, 10)
 test_func()
 
+#%% testing voxet import /export
+
+directory = "C:/Users/Mark/Cloudstor/EGen/test_data3/Models_Prelim/CURE"
+type = "GOCAD_LITHO"
+
+import egen_summary_stats as es
+
+litho_df, card_df, ent_df = es.read_gocad_voxet(directory, type, model_name='test_1', card=True, ent=True)
+
+
+# convert
+card_export = np.array(card, '>f4')
+
+# write
+card_export.tofile('./test_card.vop1')# , '>f4')
+data.tofile('./data_test.vop1', format='>f4')
+
+
+# read output binary
+
+test_data = np.fromfile('./test_card.vop1', '>f4')
+test_data = np.fromfile('./data_test.vop1', '>f4')
+
+# difference
+
+np.mean(data - test_data)

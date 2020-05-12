@@ -164,13 +164,13 @@ def egen_create_batch(*tasks): # need to fix how the tasks args can be added to 
     egen_batch.close()
     return
 
-def egen_create_batch_auto(*tasks): # need to fix how the tasks args can be added to the batch without explicit indexing
+def egen_create_batch_auto(tasks, run): # need to fix how the tasks args can be added to the batch without explicit indexing
     '''create batch file .bat for windows for correct sequence of task file execution
     this version of the function accepts a list of task names of input'''
 
     # create a switch for linux - .sh and path setting will be different
     batch1 = f"SET PATH=%PATH%;{path_geomodeller1}\n"
-    egen_batch = open(f'{path_model}/egen_batch.bat', "w")
+    egen_batch = open(f'{path_model}/egen_batch_{run}.bat', "w")
     egen_batch.write(batch1)
     for m in range(0, len(tasks)):
         batch2 = "geomodellerbatch " + str(tasks[m]) + "\n"

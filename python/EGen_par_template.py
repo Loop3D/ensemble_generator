@@ -1,12 +1,17 @@
 #%% Parameters for ensemble generation
+#############################
+#      Names and labels     #
+#############################
+
+model_label = ''
 
 #############################
 #           Paths           #
 #############################
 
-path_to_geomodeller =
+path_to_geomodeller = ''
 
-path_to_model =
+path_to_model = ''
 
 #############################
 #           Files           #
@@ -41,7 +46,7 @@ nz =
 # interface
 error_gps =
 distribution =
-DEM =
+DEM =  # True or defaults to none
 # orientations
 kappa =
 error_gps =
@@ -51,8 +56,16 @@ loc_distribution =
 #       Compute params      #
 #############################
 
-series_c =
-fault_list =
+series_c = 'all' # list of series to calculate
+fault_list = None
 krig_range =  # kriging range
 interface =  # nugget effect on interface; larger values = smoother model (less adherence to the data) default = 0.000001
 orientation =  # nugget effect on orientation data; larger values = smoother model (less adherence to the data) default = 0.01
+
+#############################
+#       Summary stats       #
+#############################
+
+card = # True or False
+ent = # True or False
+probability = # True or False
