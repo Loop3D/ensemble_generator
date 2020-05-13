@@ -409,12 +409,20 @@ def l2gm_ensemble(model_path, tmp_path, output_path, dtm_file, save_faults, mode
         ####
         # Calculate model
 
-
+        # import and convert all_sorts to dataframe
+        all_sorts = np.genfromtxt(tmp_path + 'all_sorts_clean.csv', delimiter=',', dtype='U100')
+        all_sorts_pd = pd.DataFrame(all_sorts, columns=all_sorts[0])  # columns labelled by row=0
+        all_sorts_pd = all_sorts_pd.drop([0])
 
         # assign default parameters
         if series_calc is None:
-            series_c = "all"
-            series_list = all_sorts.group.unique()
+            series_c = all_sorts_pd.group.unique()
+            series_list = all_sorts_pd.group.unique()
+        else:
+            series_list = series_calc
+        if series_calc == 'all':
+            series_c = all_sorts_pd.group.unique()
+            series_list = all_sorts_pd.group.unique()
         else:
             series_list = series_calc
         if krig_range is None:

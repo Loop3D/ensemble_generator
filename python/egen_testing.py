@@ -175,3 +175,13 @@ test_data = np.fromfile('./data_test.vop1', '>f4')
 # difference
 
 np.mean(data - test_data)
+
+#%%
+# testing run_egen
+
+import run_egen_func as re
+
+re.run_egen('../test_data3/EGen_par.py')
+
+#debug
+par_file = ('../test_data3/EGen_par.py')
