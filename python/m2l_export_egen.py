@@ -46,7 +46,7 @@ drift = drift degree (int) Drift degree (0, 1 or 2): Defines the order or degree
 
 
 ##########################################################################
-def l2gm_ensemble(model_path, tmp_path, output_path, dtm_file, save_faults, model_from=None, model_to=None, series_calc=None, krig_range=None, interface=None, orientation=None, drift=None):
+def l2gm_ensemble(model_path, tmp_path, output_path, dtm_file, save_faults, model_from=None, model_to=None, series_calc=None, fault_calc=None, krig_range=None, interface=None, orientation=None, drift=None):
     start_time = time.time()
     # run project parameters file
     os.chdir(model_path)  # path defined by egen_paths function
@@ -425,6 +425,7 @@ def l2gm_ensemble(model_path, tmp_path, output_path, dtm_file, save_faults, mode
             series_list = all_sorts_pd.group.unique()
         else:
             series_list = series_calc
+
         if krig_range is None:
             krig_range = 10000.0
         if interface is None:
@@ -449,6 +450,18 @@ GeomodellerTask {{
         SectionList {{
             node: "all" }}'''
         f.write(calc_model_str_section_list)
+
+        if fault_calc is not None:
+            calc_model_str_fault_calc1 = f'''
+        FaultList {{'''
+            f.write(calc_model_str_fault_calc1)
+            #print(calc_model_str_fault_calc1)
+            for fc in range(len(fault_calc)):
+                calc_model_str_fault_calc2 = f'''
+            node: "{fault_calc[fc]}"'''
+                f.write(calc_model_str_fault_calc2)
+            calc_model_str_fault_calc3 = " }"
+            f.write(calc_model_str_fault_calc3)
 
         for ss in range(len(series_list)):
             calc_model_str2 = f'''

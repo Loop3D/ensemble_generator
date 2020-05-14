@@ -56,7 +56,7 @@ loc_distribution =
 #       Compute params      #
 #############################
 
-series_c = 'all' # list of series to calculate
+series_list = 'all' # list of series to calculate
 fault_list = None
 krig_range =  # kriging range
 interface =  # nugget effect on interface; larger values = smoother model (less adherence to the data) default = 0.000001

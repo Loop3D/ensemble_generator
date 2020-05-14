@@ -8,12 +8,13 @@ from stats_utils import entropy_custom
 
 #%%
 
-def stats_gocad_voxet(directory, type, model_name, card=False, ent=False, export=True):
+def stats_gocad_voxet(directory, type, model_label='Anon', card=False, ent=False, export=True):
     # i want to specify the voxet name too, but first let's test just using the directory name
     #type = c("Card_VOXET", "Entropy_VOXET", "Frequency_VOXET", "OLS_VOXET", "P1_VOXET", "GOCAD_LITHO")
     # this function imports voxets that are output by Geomodeller and related CURE (Common Uncertainty Research Explorer).
     # while these voxets are technically "Gocad" format, true Gocad format has @@ prefixes to properties
     # So this reader won't work with true gocad formats (yet).
+    print(str(os.getcwd()))
     os.chdir(directory)
 
     pattern = type
@@ -64,8 +65,8 @@ def stats_gocad_voxet(directory, type, model_name, card=False, ent=False, export
         sys.exit()
 
     # create file names for export
-    card_file_name = model_name + '_card'
-    ent_file_name = model_name + '_entropy'
+    card_file_name = model_label + '_card'
+    ent_file_name = model_label + '_entropy'
 
     #create headers for different exports
     card_header = full_header.copy(deep=True) # interesting - need to do a deep copy. Normal copy will produce a new dataframe linked to the orginal. Changes to the original will be reflected in the copies.

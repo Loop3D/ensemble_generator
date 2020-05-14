@@ -80,8 +80,9 @@ import multiprocessing as mp
 
 import m2l_export_egen as egen
 series_c = (['Turee_Creek_Group', 'Hamersley_Group', 'Fortescue_Group'])
-
-egen.l2gm_ensemble('C:/Users/Mark/Cloudstor/EGen/test_data3', './tmp/', './output/', './dtm/dtm_rp.tif', save_faults = True, model_from=0, model_to=5, series_calc=series_c)
+fault_calc = (['Fault_12644', 'Fault_2235', 'Fault_11442', 'Fault_3496', 'Fault_5298', 'Fault_12647'])
+fault
+egen.l2gm_ensemble('C:/Users/Mark/Cloudstor/EGen/test_data3', './tmp/', './output/', './dtm/dtm_rp.tif', save_faults = True, model_from=0, model_to=5, series_calc=series_c, fault_calc=fault_selection)
 
 # series_c selection
 pool = mp.Pool()

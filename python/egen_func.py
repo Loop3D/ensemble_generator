@@ -244,26 +244,27 @@ def calc_voxet_ensemble(model_path, nx, ny, nz, model_from = None, model_to = No
     model_from, model_to = options here for splitting the ensemble into group for calc on multiple cores
     litho, scalar, scalar_grads = None. Set to 'True' to boolean to export litho, scalar
      scalar gradient voxets (gocad binary format).'''
-    task_path = model_path
+    #task_path = model_path
     ensemble_path = model_path + "/ensemble"
     os.chdir(model_path)
     if not os.path.exists("./voxets"):
         os.makedirs("./voxets")
 
-    os.chdir(ensemble_path)
     pattern = "*.xml"
     xml_names = glob.glob(pattern)
     voxet_path = "../voxets"
+    os.chdir(ensemble_path)
 
-    if 'model_from' != locals():
-        model_from = 0
-    if 'model_to' != locals():
-        model_to = len(xml_names)
+    # if 'model_from' != locals():
+    #     model_from = 0
+    # if 'model_to' != locals():
+    #     model_to = len(xml_names)
     if model_from is None:
         model_from = 0
     if model_to is None:
         model_to = len(xml_names)
 
+    model_voxet = open(f'{ensemble_path}/model_{model_from}_{model_to}_voxet.task', "w")
     for m in range(model_from, model_to):
         model_name = xml_names[m]
         open_task = '''GeomodellerTask {
@@ -311,9 +312,9 @@ def calc_voxet_ensemble(model_path, nx, ny, nz, model_from = None, model_to = No
             CloseProjectNoGUI {
             }
         }'''
-        model_voxet = open(f'{ensemble_path}/model_{m}_voxet.task', "w")
+
         model_voxet.write(open_task + task1 + task2 + task3 + close_task)
-        model_voxet.close()
+    model_voxet.close()
 
     return
 

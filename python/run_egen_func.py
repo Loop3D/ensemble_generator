@@ -63,7 +63,7 @@ import egen_summary_stats as es
     use_cores = int(num_cores*.8)
 
     # single processing at the moment (boring)
-    egen_l2gm = f'''ex.l2gm_ensemble('{path_to_model}', './tmp/', './output/', './dtm/{DTM_name}', save_faults = {save_faults}, model_from=0, model_to={egen_runs}, series_calc="{series_c}")\n'''
+    egen_l2gm = f'''ex.l2gm_ensemble('{path_to_model}', './tmp/', './output/', './dtm/{DTM_name}', save_faults = {save_faults}, model_from=0, model_to={egen_runs}, series_calc="{series_list}", fault_calc = {fault_list})\n'''
     f.write(egen_l2gm)
 
     # Step 5 - compute models and export voxets
@@ -71,20 +71,56 @@ import egen_summary_stats as es
     pool_split = stats_utils.split(egen_runs, use_cores)
     pool = np.arange(0, egen_runs)
     #pool_list = []
+    for g in range(use_cores):
+        pool_list = pool[:int(pool_split[g])]
+        calc_model_names = []
+        for h in pool_list:
+            calc_model_names.append("model_" + str(h) + ".task")
+
+        egen_create_batch = f'''ef.egen_create_batch_auto({calc_model_names}, {g})\n'''
+        pool = pool[int(pool_split[g]):]
+        f.write(egen_create_batch)
+
+    for e in range(use_cores):
+        egen_exec_batch = f'''os.system('cmd /c egen_batch_{e}.bat')\n'''
+        f.write(egen_exec_batch)
+
+    change_dir_1 = f'''os.chdir('./ensemble')\n'''
+    f.write(change_dir_1)
+
+    pool = np.arange(0, egen_runs)
     for i in range(use_cores):
         pool_list = pool[:int(pool_split[i])]
         model_names = []
         for j in pool_list:
             model_names.append("model_" + str(j) + "_voxet.task")
-        egen_calc_vox_ens = f'''ef.calc_voxet.ensemble('{path_to_model}', {nx}, {ny}, {nz}, model_from={pool_list[0]}, model_to={pool_list[-1]}, litho={litho}, scalar={scalar}, scalar_grads={scalar_grads})\n'''
-        #ef.egen_create_batch_auto(model_names, i)
-        egen_create_batch = f'''ef.egen_create_batch_auto({model_names}, {i})\n'''
+        egen_calc_vox_ens = f'''ef.calc_voxet_ensemble('{path_to_model}', {nx}, {ny}, {nz}, model_from={pool_list[0]}, model_to={pool_list[-1]}, litho={litho}, scalar={scalar}, scalar_grads={scalar_grads})\n'''
+        #egen_exec_vox_batch = f'''os.system('cmd /c egen_batch_{f}.bat')'''
         pool = pool[int(pool_split[i]):]
         f.write(egen_calc_vox_ens)
+        #print(egen_calc_vox_ens)
+
+    pool = np.arange(0, egen_runs)
+    for k in range(use_cores):
+        pool_list = pool[:int(pool_split[k])]
+        calc_vox_name = f'''model_{pool_list[0]}_{pool_list[-1]}_voxet.task'''
+        egen_create_vox_batch = f'''ef.egen_create_batch_auto('{calc_vox_name}', run = 'voxrun{k}')\n'''
+        pool = pool[int(pool_split[g]):]
+        #print(egen_create_vox_batch)
+        f.write(egen_create_vox_batch)
+
+    # TODO this bit below and weird batch file creation
+    # for f in range(use_cores):
+    #     egen_exec_vox_batch = f'''os.system('cmd /c egen_batch_{f}.bat')'''
+    #     f.write(egen_exec_vox_batch)
+
 
     # Step 6 - import voxets and compute summary statistics
+    change_dir2 = f'''os.chdir("{model_path}")\n'''
+    f.write(change_dir2)
+
     if litho is True:
-        egen_summary_litho_stats = f'''es.stats_gocad_voxet('./voxets', type = "GOCAD_LITHO", model_label='{model_label}', card = {card}, ent = {ent})\n'''
+        egen_summary_litho_stats = f'''es.stats_gocad_voxet(directory = './voxets', type = "GOCAD_LITHO", model_label='{model_label}', card = {card}, ent = {ent})\n'''
         f.write(egen_summary_litho_stats)
     # if scalar is True:
     #     # TODO enter scalar voxet output
