@@ -4,6 +4,8 @@ import pandas as pd
 import scipy.stats as ss
 import numpy as np
 import rasterio
+import pathlib
+import pyproj
 
 sys.path.append(path.abspath('./python'))
 sys.path.append(path.abspath('C:/Users/Mark/Documents/GitHub/Loop3D/map2loop'))
@@ -27,15 +29,10 @@ import m2l_utils_egen
 #
 # e.g.
 #
-import rasterio
-
 # from map2loop import m2l_utils
 # location=[(x,y)]
 # dtm = rasterio.open(path_to_geotiff)
 # height=m2l_utils.value_from_raster(dtm,location)
-
-# TODO add code to resample orientation locations
-
 
 '''a script that perturbs the data exported from map2loop. This will conducted on the .csv files
 - contacts_clean.csv
@@ -79,8 +76,13 @@ def perturb_interface(samples, error_gps, file_type='contacts', distribution='un
         input_file = pd.read_csv("contacts_clean.csv")  # load data
 
     if DEM is True:
-        #TODO remove hard-linked dtm reference
-        dtm = rasterio.open("C:/Users/Mark/Cloudstor/EGen/test_data3/dtm/hammersley_sheet_dtm.ers")
+        dtm = rasterio.open(path_to_model_pl / "dtm" / DTM_name)
+        if dtm.crs.linear_units != 'metre':
+            print("This DEM is not in a UTM projection. Please supply one and try again.")
+            ''' this checks to see if the DTM projection is in metres (basic check for LoopS and geomodeller
+            doesn't check that the DTM and contact/fault projections are the same. We don't input this data
+            projections, so comparison isn't made at this point'''
+
     ''' check is needed here to make sure dtm is in the same projection as the contacts data. dtm.crs == projection of project '''
 
     '''set distribution type for sampling'''

@@ -152,12 +152,19 @@ test_func()
 
 #%% testing voxet import /export
 
-directory = "C:/Users/Mark/Cloudstor/EGen/test_data3/Models_Prelim/CURE"
+#directory = "C:/Users/Mark/Cloudstor/EGen/test_data3/Models_Prelim/CURE"
+directory = "C:/CURE/3D-Paterson-FDS-Model2-UCert/CURE"
 type = "GOCAD_LITHO"
 
 import egen_summary_stats as es
 
-litho_df, card_df, ent_df = es.read_gocad_voxet(directory, type, model_name='test_1', card=True, ent=True)
+propor_data, litho_df, card_df, ent_df = es.stats_gocad_voxet(directory, type, model_label='Yeneena', card=True, ent=True, propor = True)
+
+# debug
+model_label='test_1'
+card=True
+ent=True
+propor = True
 
 
 # convert

@@ -4,17 +4,18 @@ import pandas as pd
 #from math import log, e
 import sys, os, glob
 from stats_utils import entropy_custom
+from stats_utils import litho_probabilites
 
 
 #%%
 
-def stats_gocad_voxet(directory, type, model_label='Anon', card=False, ent=False, export=True):
+def stats_gocad_voxet(directory, type, model_label='Anon', card=False, ent=False, propor=False, export=True):
     # i want to specify the voxet name too, but first let's test just using the directory name
     #type = c("Card_VOXET", "Entropy_VOXET", "Frequency_VOXET", "OLS_VOXET", "P1_VOXET", "GOCAD_LITHO")
     # this function imports voxets that are output by Geomodeller and related CURE (Common Uncertainty Research Explorer).
     # while these voxets are technically "Gocad" format, true Gocad format has @@ prefixes to properties
     # So this reader won't work with true gocad formats (yet).
-    print(str(os.getcwd()))
+    #print(str(os.getcwd()))
     os.chdir(directory)
 
     pattern = type
@@ -67,10 +68,13 @@ def stats_gocad_voxet(directory, type, model_label='Anon', card=False, ent=False
     # create file names for export
     card_file_name = model_label + '_card'
     ent_file_name = model_label + '_entropy'
+    # proportion file names set in the export loop below
+
 
     #create headers for different exports
     card_header = full_header.copy(deep=True) # interesting - need to do a deep copy. Normal copy will produce a new dataframe linked to the orginal. Changes to the original will be reflected in the copies.
     ent_header = full_header.copy(deep=True) # interesting - need to do a deep copy. Normal copy will produce a new dataframe linked to the orginal. Changes to the original will be reflected in the copies.
+    propor_header = full_header.copy(deep=True)
 
     # format header info - cardinality
     card_header.loc[2, 1] = card_file_name
@@ -87,6 +91,7 @@ def stats_gocad_voxet(directory, type, model_label='Anon', card=False, ent=False
     ent_header.loc[17, 2] = "'Entropy'"
     ent_header.loc[18, 2] = "'Entropy'"
     ent_header.loc[24, 2] = ent_file_name + '.vop1'
+
 
     #list the voxet property binary files to import
     # generate list of voxet header files to import
@@ -111,21 +116,45 @@ def stats_gocad_voxet(directory, type, model_label='Anon', card=False, ent=False
     # calculate cardinality
     # simple operation - how many unique values in each row.
     if card is True:
-        card = litho_df.nunique(1)
+        card_data = litho_df.nunique(1)
         if export is True:
-            card_export = np.array(card, '>f4')
+            card_export = np.array(card_data, '>f4')
             card_export.tofile(card_file_name + '.vop1')
             card_header.to_csv(card_file_name + ".vo", sep=" ", na_rep="", header=False, index=False)
 
     #calculate entropy
     if ent is True:
-        ent = litho_df.apply(entropy_custom, axis=1)
+        ent_data = litho_df.apply(entropy_custom, axis=1)
         if export is True:
-            ent_export = np.array(ent, '>f4')
+            ent_export = np.array(ent_data, '>f4')
             ent_export.tofile(ent_file_name + '.vop1')
             ent_header.to_csv(ent_file_name + ".vo", sep=" ", na_rep="", header=False, index=False)
 
-    return litho_df, card, ent
+    #calculate frequency
+    if propor is True:
+        propor_data = litho_probabilites(litho_df)
+        if export is True:
+            propor_block_template = propor_header.copy(deep=True)[15:26]
+            propor_header = propor_header.drop(propor_header.index[15:27])
+            propor_header.loc[2, 1] = f'''{model_label}_proportions'''
+            propor_header_file_name = f'''{model_label}_propor.vo'''
+            #propor_file_name = propor_header.drop(propor_header.index[15:26])
+            for v in range(1, propor_data.shape[0]):
+                property_file_name = f'''{model_label}_propor_{v}.vop1'''
+                propor_block_tmp = propor_block_template.copy(deep=True)
+                propor_block_tmp.loc[15:18,1]=v
+                propor_block_tmp.loc[20:25, 1] = v
+                propor_block_tmp.loc[15, 2] = f'''Proportion_lith_{v}'''
+                propor_block_tmp.loc[16, 2] = f'''Proportion_lith_{v}'''
+                propor_block_tmp.loc[17, 2] = f'''Proportion_lith_{v}'''
+                propor_block_tmp.loc[18, 2] = f'''Proportion_lith_{v}'''
+                propor_block_tmp.loc[24, 2] = property_file_name
+                propor_header = propor_header.append(propor_block_tmp)
+                propor_export = np.array(propor_data.loc[v], '>f4')
+                propor_export.tofile(property_file_name)
+            propor_header.to_csv(propor_header_file_name, sep=" ", na_rep="", header=False, index=False)
+
+    return litho_df, card_data, ent_data, propor_data
 
 
 
