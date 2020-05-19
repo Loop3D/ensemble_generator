@@ -33,7 +33,7 @@ def egen_xml_to_task(model_name):
     import os
     global g_model_name  # name of model without .xml for naming use in exports etc.
     if model_name.find(".xml") == -1:
-        model_name + str(".xml")
+        model_name = model_name + str(".xml")
     if model_name.find(".xml") != -1:
         g_model_name = model_name
     else:
@@ -41,17 +41,17 @@ def egen_xml_to_task(model_name):
     if not os.path.exists(path_output):
         os.makedirs(path_output)
     orig_task = open(f'{path_output}/xml_to_task.task', "w")
-    task = '''GeomodellerTask {
-        WriteBatchFile {
-            filename: "%s/%s"
-                Task_Name: "%s/project_export.task"
+    task = f'''GeomodellerTask {{
+        WriteBatchFile {{
+            filename: "{path_model}/{model_name}"
+                Task_Name: "{path_output}/project_export.task"
                 convertSection_InterfacesTo3D: true
                 convertSection_FoliationTo3D: true
                 exportBoreholesToCSV: false
-                csv_path: "%s/"
+                csv_path: "{path_output}/"
                 exportToGeomodellerTempDirectory: false
-            }
-        }''' % (path_model, model_name, path_output, path_output)
+            }}
+        }}'''
     orig_task.write(task)
     orig_task.close()
     return
@@ -159,7 +159,7 @@ def egen_create_batch(*tasks): # need to fix how the tasks args can be added to 
     batch = f"SET PATH=%PATH%;{path_geomodeller1}\n"
     for i in range(0, len(tasks)):
         batch = batch + "geomodellerbatch " + tasks[i] + "\n"
-    egen_batch = open(f'{path_model}/egen_batch.bat', "w")
+    egen_batch = open(f'{path_model}/output/egen_batch.bat', "w")
     egen_batch.write(batch)
     egen_batch.close()
     return

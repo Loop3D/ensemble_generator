@@ -1,10 +1,11 @@
 #%% Parameters for ensemble generation
 #############################
-#      Names and labels     #
+#  Names, labels, source    #
 #############################
 
 model_label = ''
-
+source_M2L = #  True or False
+source_geomodeller = #  True or False
 #############################
 #           Paths           #
 #############################

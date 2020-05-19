@@ -1,5 +1,5 @@
 from os import path
-import sys
+import sys, glob
 import pandas as pd
 import scipy.stats as ss
 import numpy as np
@@ -46,8 +46,10 @@ Not done now but will be
 - ign_orientations_domes.csv
 
 A perturbed dataset will be produced for each model e.g.
-contacts_clean.csv -> contacts_clean_1.csv; contacts_clean_2.csv; etc
-orientations_clean.csv -> orientations_clean_1.csv; orientations_clean_2.csv; etc
+contacts_clean.csv -> contacts_1.csv; contacts_clean_2.csv; etc
+orientations_clean.csv -> contacts_orient_1.csv; orientations_clean_2.csv; etc
+faults.csv -> faults_1.csv; faults_2.csv etc.
+fault_orientations.csv -> faults_orient_1.csv; faults_orient_2.csv
 
 There is very likely a more efficient way of doing this, but for the moment, this is how we do it.'''
 
@@ -76,12 +78,16 @@ def perturb_interface(samples, error_gps, file_type='contacts', distribution='un
         input_file = pd.read_csv("contacts_clean.csv")  # load data
 
     if DEM is True:
-        dtm = rasterio.open(path_to_model_pl / "dtm" / DTM_name)
-        if dtm.crs.linear_units != 'metre':
-            print("This DEM is not in a UTM projection. Please supply one and try again.")
-            ''' this checks to see if the DTM projection is in metres (basic check for LoopS and geomodeller
-            doesn't check that the DTM and contact/fault projections are the same. We don't input this data
-            projections, so comparison isn't made at this point'''
+        if source_geomodeller is True:
+            load_this = glob.glob(f'''{path_to_model}/MeshGrids/DTM.igmesh/*.ers''')
+            dtm = rasterio.open(load_this[0])
+        else:
+            dtm = rasterio.open(f'''{path_to_model}/dtm/{DTM_name}''')
+            if dtm.crs.linear_units != 'metre':
+                print("This DEM is not in a UTM projection. Please supply one and try again.")
+                ''' this checks to see if the DTM projection is in metres (basic check for LoopS and geomodeller
+                doesn't check that the DTM and contact/fault projections are the same. We don't input this data
+                projections, so comparison isn't made at this point'''
 
     ''' check is needed here to make sure dtm is in the same projection as the contacts data. dtm.crs == projection of project '''
 
