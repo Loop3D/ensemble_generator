@@ -10,8 +10,8 @@ import egen_func as ef
 
 # debug - to be replaced with par file (or class??)
 path_to_geomodeller = 'C:\GeoModeller\GeoModeller4.0.8_x64_88b64e610d9'
-path_to_model = 'C:/Users/Mark/Cloudstor/Projects/Paterson/Yeneena/3D-Paterson-FDS-Model2-16Mar20'
-xml_name = '3D-Paterson-FDS-Model2-16Mar20'
+path_to_model = 'C:/Users/Mark/Cloudstor/EGen/ObjFunc_model'
+xml_name = 'reallnit'
 
 os.chdir(path_to_model)
 ef.egen_paths(path_to_geomodeller, path_to_model)  # set paths
@@ -24,14 +24,23 @@ stream = os.popen('echo Returned output')
 os.system('egen_batch.bat')
 
 # taskfile_path = path+root_name+'.task'
-tasks = open('project_export.task', "r")
+#tasks = open('project_export.task', "r")
+tasks = open('realInit.task', "r")
 contents = tasks.readlines()
 tasks.close()
+
+#%% Check model directory structure
+
+if not os.path.exists("./output"):
+    os.makedirs("./output")
+# if not os.path.exists("./ensemble"):
+#     os.makedirs("./ensemble")
+
 
 # %% Parse 3D Interface Info
 os.chdir(path_to_model + '/output')
 allc = open('contacts_clean.csv', "w")
-allc.write('x,y,z,formation\n')
+allc.write('X,Y,Z,formation\n')
 i = 0
 for line in contents:
     if ('GeomodellerTask {' in line):
@@ -58,7 +67,7 @@ allc.close()
 # %% Parse 3D Foliation Info
 
 allo = open('orientations_clean.csv', "w")
-allo.write('x,y,z,azimuth,dip,polarity,formation\n')
+allo.write('X,Y,Z,azimuth,dip,polarity,formation\n')
 i = 0
 for line in contents:
     if ('GeomodellerTask {' in line):
@@ -90,6 +99,15 @@ for line in contents:
                     break
     i = i + 1
 allo.close()
+
+#%%
+
+###################
+
+'''the cells below relate to topology - given it is already defined in the task file, and we are net yet simulating
+changes to topolgy, we don't need to parse these as they won't be input. 
+Any changes to topology can (for the moment) be done with Geomodeller and saved into the project. 
+'''
 
 # %% Parse stratigraphy Info
 

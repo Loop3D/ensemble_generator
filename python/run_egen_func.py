@@ -9,7 +9,9 @@ import numpy as np
 import os
 
 # debug
-par_file = 'C:/Users/Mark/Cloudstor/EGen/test_data3/EGen_par.py'
+# par_file = 'C:/Users/Mark/Cloudstor/EGen/test_data3/EGen_par.py'
+par_file = 'C:/Users/Mark/Cloudstor/EGen/ObjFunc_model/realInit_par.py'
+
 
 def run_egen(par_file=None):
     #load Egen_par.py
@@ -30,25 +32,32 @@ import m2l_export_egen as ex
 import egen_summary_stats as es
 '''
 
+
+
     f.write(modules)
     # Step 1 - set paths
-
+    modelpath = f'''sys.path.append(os.path.abspath('{path_to_model}'))\n'''
+    f.write(modelpath)
     egen_path = f'''ef.egen_paths('{path_to_geomodeller}', '{path_to_model}')\n'''
     f.write(egen_path)
 
     # Step 2 - perturb interfaces
     change_dir = f'''os.chdir('./output')\n'''
-    egen_int_forms_pert = f'''pf.perturb_interface({egen_runs}, {error_gps}, file_type='contacts', distribution='{distribution}', DEM={DEM})\n'''
-    egen_int_fault_pert = f'''pf.perturb_interface({egen_runs}, {error_gps}, file_type='faults', distribution='{distribution}', DEM={DEM})\n'''
-    f.write(change_dir)
+    egen_int_forms_pert = f'''pf.perturb_interface({egen_runs}, {error_gps}, file_type='contacts', distribution='{distribution}', DEM={DEM}, source_geomodeller={source_geomodeller})\n'''
     f.write(egen_int_forms_pert)
-    f.write(egen_int_fault_pert)
+    if source_geomodeller is False:
+        egen_int_fault_pert = f'''pf.perturb_interface({egen_runs}, {error_gps}, file_type='faults', distribution='{distribution}', DEM={DEM}, source_geomodeller={source_geomodeller})\n'''
+        f.write(egen_int_fault_pert)
+    f.write(change_dir)
+
+
 
     # Step 3 - perturb orientations
     egen_ori_forms_pert = f'''pf.perturb_orient_vMF({egen_runs}, {kappa}, {error_gps}, file_type='contacts', loc_distribution='{loc_distribution}', DEM={DEM})\n'''
-    egen_ori_fault_pert = f'''pf.perturb_orient_vMF({egen_runs}, {kappa}, {error_gps}, file_type='faults', loc_distribution='{loc_distribution}', DEM={DEM})\n'''
     f.write(egen_ori_forms_pert)
-    f.write(egen_ori_fault_pert)
+    if source_geomodeller is False:
+        egen_ori_fault_pert = f'''pf.perturb_orient_vMF({egen_runs}, {kappa}, {error_gps}, file_type='faults', loc_distribution='{loc_distribution}', DEM={DEM})\n'''
+        f.write(egen_ori_fault_pert)
 
 
     # Step 4 - create new model task file with l2gm_ensemble
@@ -116,7 +125,7 @@ import egen_summary_stats as es
 
 
     # Step 6 - import voxets and compute summary statistics
-    change_dir2 = f'''os.chdir("{model_path}")\n'''
+    change_dir2 = f'''os.chdir("{path_to_model}")\n'''
     f.write(change_dir2)
 
     if litho is True:

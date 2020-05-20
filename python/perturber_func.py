@@ -1,5 +1,5 @@
 from os import path
-import sys, glob
+import sys, glob, os
 import pandas as pd
 import scipy.stats as ss
 import numpy as np
@@ -59,11 +59,12 @@ for measurements at depth (section interps, drillholes etc. A flag for depth con
 but this complicates things a fair bit.'''
 
 
-def perturb_interface(samples, error_gps, file_type='contacts', distribution='uniform', DEM=None):
+def perturb_interface(samples, error_gps, file_type='contacts', distribution='uniform', DEM=False, source_geomodeller=False):
     ''' samples is the number of draws, thus the number of models in the ensemble
     error_gps is the assumed error in the location, and will be the width of the distribution
     distribution is the sampling type - defaults to uniform, the other option is 'normal' '''
     # write out parameters for record
+    os.chdir('./output')
     params_file = open("perturb_" + file_type + "_int_params.csv", "w")
     params_file.write("samples," + str(samples) + "\n")
     params_file.write("error_gps," + str(error_gps) + "\n")
@@ -79,12 +80,12 @@ def perturb_interface(samples, error_gps, file_type='contacts', distribution='un
 
     if DEM is True:
         if source_geomodeller is True:
-            load_this = glob.glob(f'''{path_to_model}/MeshGrids/DTM.igmesh/*.ers''')
+            load_this = glob.glob(f'''../MeshGrids/DTM.igmesh/*.ers''')
             dtm = rasterio.open(load_this[0])
         else:
-            dtm = rasterio.open(f'''{path_to_model}/dtm/{DTM_name}''')
+            dtm = rasterio.open(f'''./dtm/{DTM_name}''')
             if dtm.crs.linear_units != 'metre':
-                print("This DEM is not in a UTM projection. Please supply one and try again.")
+                print("Warning: this DEM is not in a UTM projection.\n Please supply one and try again.")
                 ''' this checks to see if the DTM projection is in metres (basic check for LoopS and geomodeller
                 doesn't check that the DTM and contact/fault projections are the same. We don't input this data
                 projections, so comparison isn't made at this point'''
@@ -128,11 +129,12 @@ def perturb_interface(samples, error_gps, file_type='contacts', distribution='un
     return
 
 
-def perturb_orient_vMF(samples, kappa, error_gps, file_type='contacts', loc_distribution='uniform', DEM=None):
+def perturb_orient_vMF(samples, kappa, error_gps, file_type='contacts', loc_distribution='uniform', DEM=False, source_geomodeller=False):
     # samples is the number of draws, thus the number of models in the ensemble
     # kappa is the assumed error in the orientation, and is roughly the inverse to the width of the distribution
     # i.e. higher numbers = tighter distribution
     # write out parameters for record
+    os.chdir('./output')
     params_file = open("perturb_" + file_type + "_orient_params.csv", "w")
     params_file.write("samples," + str(samples) + "\n")
     params_file.write("kappa," + str(kappa) + "\n")
@@ -148,8 +150,17 @@ def perturb_orient_vMF(samples, kappa, error_gps, file_type='contacts', loc_dist
         input_file = pd.read_csv("orientations_clean.csv")  # load data
 
     if DEM is True:
-        # TODO remove hard-linked dtm reference
-        dtm = rasterio.open("C:/Users/Mark/Cloudstor/EGen/test_data3/dtm/hammersley_sheet_dtm.ers")
+        if source_geomodeller is True:
+            load_this = glob.glob(f'''../MeshGrids/DTM.igmesh/*.ers''')
+            dtm = rasterio.open(load_this[0])
+        else:
+            dtm = rasterio.open(f'''{path_to_model}/dtm/{DTM_name}''')
+            if dtm.crs.linear_units != 'metre':
+                print("Warning: this DEM is not in a UTM projection.\n Please supply one and try again.")
+                ''' this checks to see if the DTM projection is in metres (basic check for LoopS and geomodeller
+                doesn't check that the DTM and contact/fault projections are the same. We don't input this data
+                projections, so comparison isn't made at this point'''
+
     ''' check is needed here to make sure dtm is in the same projection as the contacts data. dtm.crs == projection of project '''
 
     '''set distribution type for location resampling'''

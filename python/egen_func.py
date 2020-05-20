@@ -7,6 +7,7 @@ def egen_paths(geomodeller, model, data=None):
     global path_geomodeller1
     global path_geomodeller2
     global path_model
+    global path_to_model
     global path_output
     global path_data
     path_geomodeller1 = f'{geomodeller}/bin'
@@ -14,15 +15,18 @@ def egen_paths(geomodeller, model, data=None):
     path_geomodeller2 = f'{geomodeller}/bin/server'
     path_geomodeller2 = path_geomodeller2.replace("\\", "/")
     path_model = model
+    path_to_model = model
     # path_model = "%r" % model
     path_model = path_model.replace("\\", "/")
+    path_to_model = path_to_model.replace("\\", "/")
     path_output = f'{model}/output'  # task files will be stored in output directory. ?Separate one - unnecessary at this point
     path_output = path_output.replace("\\", "/")
+
     if data is not None:
         path_data = data.replace("\\", "/")
     else:
         data = None
-    return #path_geomodeller1, path_geomodeller2, path_model
+    return #path_geomodeller1, path_geomodeller2, path_model, path_to_model, path_output
 
 
 def egen_xml_to_task(model_name):
