@@ -1,5 +1,6 @@
 import numpy as np
 import sys, os, glob
+import pandas as pd
 
 def egen_paths(geomodeller, model, data=None):
     """define paths for different parts of the process"""
@@ -322,7 +323,73 @@ def calc_voxet_ensemble(model_path, nx, ny, nz, model_from = None, model_to = No
 
     return
 
+#%% task builder
+
+# debug
+filename = 'realInit.task'
+path = pathlib.Path('C:/Users/Mark/Cloudstor/EGen/ObjFunc_model') / filename
 
 
+
+def task_builder(path, filename, egen_runs, input='./output', *kwargs):
+    #task_file = open(path + '/' + filename, "r")
+    contents = pd.read_csv(path + '/' + filename, sep='\t', header=None)
+    #contents = task_file.readlines()
+    #contents = (contents)
+    # get first file part - everything up to where the data points are added
+    end_line = contents[0]==('  Add3DInterfacesToFormation {')
+    idx = [a for a, x in enumerate(end_line) if x] # make list of row indices where the string above is found
+    task_pt1 = contents[0:(idx[0]-1)]
+
+    #task_output = open('task_test.task', 'w')
+    #task_output.write(str(task_pt1))
+    #task_output.close()
+    for i in range(egen_runs):
+        new_contacts = pd.read_csv(f'{path}/output/contacts_{i}.csv')
+        new_orientations = pd.read_csv(f'{path}/output/contacts_orient_{i}.csv')
+        p_idx = new_orientations['polarity'] == 0 #  replace polarity 1 = 'Normal_Polarity'; 0 = 'Reverse_Polarity'
+        new_orientations['polarity'][p_idx] = 'Reverse_Polarity' # this may cause trouble (chained indexing), I have changed the parser to not convert polarity flags
+        new_orientations['polarity'][p_idx==False] = 'Normal_Polarity'
+
+        tmp_contact_formations = new_contacts.formation.unique()
+        tmp_orient_formations = new_orientations.formation.unique()
+        tmp_cont_chunk = pd.DataFrame(['Geomodeller Task {']) #  build the 'chunk' of the task file with contact info
+        tmp_orient_chunk = pd.DataFrame(['Geomodeller Task {']) #  build the 'chunk' of the task file with orientation info
+        for k in range(len(tmp_contact_formations)):
+            idx = new_contacts['formation']==tmp_contact_formations[k]
+            tmp_contacts = new_contacts[idx]
+            tmp_cont_chunk = tmp_cont_chunk.append(['Add3DInterfacesToFormation {'])
+            for l in range(len(tmp_contacts)):
+                tmp_cont_chunk = tmp_cont_chunk.append(['point {'])
+                tmp_cont_chunk = tmp_cont_chunk.append([f'x: {tmp_contacts.iloc[l, 1]}'])
+                tmp_cont_chunk = tmp_cont_chunk.append([f'y: {tmp_contacts.iloc[l, 2]}'])
+                tmp_cont_chunk = tmp_cont_chunk.append([f'z: {tmp_contacts.iloc[l, 3]} }}'])
+            tmp_cont_chunk = tmp_cont_chunk.append([f'formation: "{tmp_contact_formations[k]}" }}'])
+            tmp_cont_chunk = tmp_cont_chunk.append([''])
+        for j in range(len(tmp_orient_formations)):
+            idx = new_orientations['formation'] == tmp_orient_formations[j]
+            tmp_orient = new_orientations[idx]
+            tmp_orient_chunk = tmp_orient_chunk.append(['Add3DFoliationToFormation {'])
+            tmp_orient_chunk = tmp_orient_chunk.append([f'formation: "{tmp_orient_formations[j]}" {{'])
+            for h in range(len(tmp_orient)):
+                tmp_orient_chunk = tmp_orient_chunk.append(['foliation {'])
+                tmp_orient_chunk = tmp_orient_chunk.append(['Point3D {'])
+                tmp_orient_chunk = tmp_orient_chunk.append([f'x: {tmp_orient.iloc[h, 1]}'])
+                tmp_orient_chunk = tmp_orient_chunk.append([f'y: {tmp_orient.iloc[h, 2]}'])
+                tmp_orient_chunk = tmp_orient_chunk.append([f'z: {tmp_orient.iloc[h, 3]} }}'])
+                tmp_orient_chunk = tmp_orient_chunk.append([f'dip: {tmp_orient.iloc[h, 5]} }}'])
+                tmp_orient_chunk = tmp_orient_chunk.append([f'direction: {tmp_orient.iloc[h, 4]} }}'])
+                tmp_orient_chunk = tmp_orient_chunk.append([f'azimuth: {tmp_orient.iloc[h, 4]} }}'])
+                tmp_orient_chunk = tmp_orient_chunk.append([f'polarity: {tmp_orient.iloc[h, 6]} }}'])
+            tmp_orient_chunk = tmp_orient_chunk.append([f'}}'])
+
+    full_task = task_pt1.append(tmp_cont_chunk)
+    full_task = full_task.append(tmp_orient_chunk)
+
+    full_task.to_csv(f'{path.parent}/{path.stem}_{i}{path.suffix}', index=None, header=None, sep = '\t')
+
+
+
+    new_contents =
 
 

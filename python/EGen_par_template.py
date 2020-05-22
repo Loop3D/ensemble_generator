@@ -44,6 +44,10 @@ nz =
 #      Perturbing params    #
 #############################
 
+# perturbation off/on
+
+perturb_model = # True/False no perturbation of
+
 # interface
 error_gps =
 distribution =

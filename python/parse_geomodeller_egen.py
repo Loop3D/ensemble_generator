@@ -86,10 +86,10 @@ for line in contents:
                     azimuth = contents[j + 8].split(":")
                     polarity = contents[j + 9].split(":")
                     polarity = polarity[1].replace("\n", "").replace(" ", "")
-                    if (polarity == 'Normal_Polarity'):
-                        polarity = 1
-                    else:
-                        polarity = 0
+                    # if (polarity == 'Normal_Polarity'):
+                    #     polarity = 1
+                    # else:
+                    #     polarity = 0
                     ostr = str(x[1].replace("\n", "")) + ',' + str(y[1].replace("\n", "")) + ',' + str(
                         z[1].replace("\n", "")) + ',' + str(azimuth[1].replace("\n", "")) + ',' + str(
                         dip[1].replace("\n", "")) + ',' + str(polarity) + ',' + str(formation.replace('"', '')) + '\n'
