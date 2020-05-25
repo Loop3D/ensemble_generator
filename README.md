@@ -15,6 +15,14 @@ To install the 'egen' python package locally, clone this repo and navigate into 
 pip install -e .
 ```
 
+## Usage
+
+```python
+import egen.perturber_func as pf
+import egen.m2l_utils_egen as utils
+...
+```
+
 ## Docker Dev Environment
 
 To develop and test egen inside a dedicated loop environment, follow the instructions in this [repo](https://github.com/Loop3D/map2loop-2/).
