@@ -1,5 +1,5 @@
 import numpy as np
-import sys, os, glob
+import sys, os, glob, pathlib, csv
 import pandas as pd
 
 def egen_paths(geomodeller, model, data=None):
@@ -331,13 +331,14 @@ path = pathlib.Path('C:/Users/Mark/Cloudstor/EGen/ObjFunc_model') / filename
 
 
 
+
 def task_builder(path, filename, egen_runs, input='./output', *kwargs):
     #task_file = open(path + '/' + filename, "r")
-    contents = pd.read_csv(path + '/' + filename, sep='\t', header=None)
+    contents = pd.read_csv(path, sep='\t', header=None) #, quotechar='\0') # + '/' + filename, sep='\t', header=None)
     #contents = task_file.readlines()
     #contents = (contents)
     # get first file part - everything up to where the data points are added
-    end_line = contents[0]==('  Add3DInterfacesToFormation {')
+    end_line = contents[0]=='  Add3DInterfacesToFormation {'
     idx = [a for a, x in enumerate(end_line) if x] # make list of row indices where the string above is found
     task_pt1 = contents[0:(idx[0]-1)]
 
@@ -388,8 +389,10 @@ def task_builder(path, filename, egen_runs, input='./output', *kwargs):
 
     full_task.to_csv(f'{path.parent}/{path.stem}_{i}{path.suffix}', index=None, header=None, sep = '\t')
 
+    #debug
+    task_pt1.to_csv(path.parent / 'task_pt1.task', index=None, header=None, quoting=csv.QUOTE_NONE, quotechar="",  escapechar="\\")  #, quotechar="",  escapechar="\\")
 
 
-    new_contents =
+    # new_contents =
 
 

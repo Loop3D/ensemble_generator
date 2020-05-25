@@ -42,21 +42,22 @@ import egen_summary_stats as es
     f.write(egen_path)
 
     # Step 2 - perturb interfaces
-    change_dir = f'''os.chdir('./output')\n'''
+
+    #f.write(f'''os.chdir('./output')\n''')
     egen_int_forms_pert = f'''pf.perturb_interface({egen_runs}, {error_gps}, file_type='contacts', distribution='{distribution}', DEM={DEM}, source_geomodeller={source_geomodeller})\n'''
     f.write(egen_int_forms_pert)
     if source_geomodeller is False:
         egen_int_fault_pert = f'''pf.perturb_interface({egen_runs}, {error_gps}, file_type='faults', distribution='{distribution}', DEM={DEM}, source_geomodeller={source_geomodeller})\n'''
         f.write(egen_int_fault_pert)
-    f.write(change_dir)
+
 
 
 
     # Step 3 - perturb orientations
-    egen_ori_forms_pert = f'''pf.perturb_orient_vMF({egen_runs}, {kappa}, {error_gps}, file_type='contacts', loc_distribution='{loc_distribution}', DEM={DEM})\n'''
+    egen_ori_forms_pert = f'''pf.perturb_orient_vMF({egen_runs}, {kappa}, {error_gps}, file_type='contacts', loc_distribution='{loc_distribution}', DEM={DEM}, source_geomodeller={source_geomodeller})\n'''
     f.write(egen_ori_forms_pert)
     if source_geomodeller is False:
-        egen_ori_fault_pert = f'''pf.perturb_orient_vMF({egen_runs}, {kappa}, {error_gps}, file_type='faults', loc_distribution='{loc_distribution}', DEM={DEM})\n'''
+        egen_ori_fault_pert = f'''pf.perturb_orient_vMF({egen_runs}, {kappa}, {error_gps}, file_type='faults', loc_distribution='{loc_distribution}', DEM={DEM}, source_geomodeller={source_geomodeller})\n'''
         f.write(egen_ori_fault_pert)
 
 

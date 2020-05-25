@@ -64,8 +64,8 @@ def perturb_interface(samples, error_gps, file_type='contacts', distribution='un
     error_gps is the assumed error in the location, and will be the width of the distribution
     distribution is the sampling type - defaults to uniform, the other option is 'normal' '''
     # write out parameters for record
-    os.chdir('./output')
-    params_file = open("perturb_" + file_type + "_int_params.csv", "w")
+    output_location = './output'
+    params_file = open(output_location + "/perturb_" + file_type + "_int_params.csv", "w")
     params_file.write("samples," + str(samples) + "\n")
     params_file.write("error_gps," + str(error_gps) + "\n")
     params_file.write("file_type," + file_type + "\n")
@@ -74,13 +74,13 @@ def perturb_interface(samples, error_gps, file_type='contacts', distribution='un
     params_file.close()
     # todo navigate to data directory (should be {model_dir}/output
     if file_type == 'faults':
-        input_file = pd.read_csv("faults.csv")  # load data
+        input_file = pd.read_csv(output_location + "/faults.csv")  # load data
     else:
-        input_file = pd.read_csv("contacts_clean.csv")  # load data
+        input_file = pd.read_csv(output_location + "/contacts_clean.csv")  # load data
 
     if DEM is True:
         if source_geomodeller is True:
-            load_this = glob.glob(f'''../MeshGrids/DTM.igmesh/*.ers''')
+            load_this = glob.glob(f'''./MeshGrids/DTM.igmesh/*.ers''')
             dtm = rasterio.open(load_this[0])
         else:
             dtm = rasterio.open(f'''./dtm/{DTM_name}''')
@@ -125,7 +125,7 @@ def perturb_interface(samples, error_gps, file_type='contacts', distribution='un
         new_coords["formation"] = input_file["formation"]
         file_name = file_type + "_" + str(m) + ".csv"
         #print(file_name)
-        new_coords.to_csv(file_name)
+        new_coords.to_csv(output_location + '/' + file_name)
     return
 
 
@@ -134,8 +134,8 @@ def perturb_orient_vMF(samples, kappa, error_gps, file_type='contacts', loc_dist
     # kappa is the assumed error in the orientation, and is roughly the inverse to the width of the distribution
     # i.e. higher numbers = tighter distribution
     # write out parameters for record
-    os.chdir('./output')
-    params_file = open("perturb_" + file_type + "_orient_params.csv", "w")
+    output_location = './output'
+    params_file = open(output_location + "/perturb_" + file_type + "_orient_params.csv", "w")
     params_file.write("samples," + str(samples) + "\n")
     params_file.write("kappa," + str(kappa) + "\n")
     params_file.write("error_gps," + str(error_gps) + "\n")
@@ -145,13 +145,13 @@ def perturb_orient_vMF(samples, kappa, error_gps, file_type='contacts', loc_dist
     params_file.close()
 
     if file_type == 'faults':
-        input_file = pd.read_csv("fault_orientations.csv")  # load data
+        input_file = pd.read_csv(output_location + "/fault_orientations.csv")  # load data
     else:
-        input_file = pd.read_csv("orientations_clean.csv")  # load data
+        input_file = pd.read_csv(output_location + "/orientations_clean.csv")  # load data
 
     if DEM is True:
         if source_geomodeller is True:
-            load_this = glob.glob(f'''../MeshGrids/DTM.igmesh/*.ers''')
+            load_this = glob.glob(f'''./MeshGrids/DTM.igmesh/*.ers''')
             dtm = rasterio.open(load_this[0])
         else:
             dtm = rasterio.open(f'''{path_to_model}/dtm/{DTM_name}''')
@@ -220,7 +220,7 @@ def perturb_orient_vMF(samples, kappa, error_gps, file_type='contacts', loc_dist
             new_orient["azimuth"], new_orient["dip"] = new_ori[1], new_ori[0]
             file_name = file_type + "_orient_" + str(s) + ".csv"
 
-            new_orient.to_csv(file_name)
+            new_orient.to_csv(output_location + '/' + file_name)
 
     return
 

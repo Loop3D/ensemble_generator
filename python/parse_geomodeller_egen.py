@@ -76,27 +76,28 @@ for line in contents:
             formation = formation[1].replace("\n", "")
             print(formation)
 
-            for j in range(i + 3, len(contents), 10):
-                if ('foliation' in contents[j]):
-                    x = contents[j + 2].split(":")
-                    y = contents[j + 3].split(":")
-                    z = contents[j + 4].split(":")
-                    dip = contents[j + 6].split(":")
-                    dipdir = contents[j + 7].split(":")
-                    azimuth = contents[j + 8].split(":")
-                    polarity = contents[j + 9].split(":")
-                    polarity = polarity[1].replace("\n", "").replace(" ", "")
-                    # if (polarity == 'Normal_Polarity'):
-                    #     polarity = 1
-                    # else:
-                    #     polarity = 0
-                    ostr = str(x[1].replace("\n", "")) + ',' + str(y[1].replace("\n", "")) + ',' + str(
-                        z[1].replace("\n", "")) + ',' + str(azimuth[1].replace("\n", "")) + ',' + str(
-                        dip[1].replace("\n", "")) + ',' + str(polarity) + ',' + str(formation.replace('"', '')) + '\n'
-                    allo.write(ostr)
-                    # print(x[1],y[1],z[1],azimuth[1],dip[1],polarity,formation[1])
-                else:
-                    break
+        for g in range(i + 3, len(contents), 11):
+            if ('foliation' in contents[g]):
+
+                x = contents[g + 2].split(":")
+                y = contents[g + 3].split(":")
+                z = contents[g + 4].split(":")
+                dip = contents[g + 6].split(":")
+                dipdir = contents[g + 7].split(":")
+                azimuth = contents[g + 8].split(":")
+                polarity = contents[g + 9].split(":")
+                polarity = polarity[1].replace("\n", "").replace(" ", "")
+                # if (polarity == 'Normal_Polarity'):
+                #     polarity = 1
+                # else:
+                #     polarity = 0
+                ostr = str(x[1].replace("\n", "")) + ',' + str(y[1].replace("\n", "")) + ',' + str(
+                    z[1].replace("\n", "")) + ',' + str(azimuth[1].replace("\n", "")) + ',' + str(
+                    dip[1].replace("\n", "")) + ',' + str(polarity) + ',' + str(formation.replace('"', '')) + '\n'
+                allo.write(ostr)
+                # print(x[1],y[1],z[1],azimuth[1],dip[1],polarity,formation[1])
+            else:
+                break
     i = i + 1
 allo.close()
 
