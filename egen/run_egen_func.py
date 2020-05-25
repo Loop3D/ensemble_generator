@@ -1,9 +1,9 @@
-import egen_func as ef
-import perturber_func as pf
-import m2l_export_egen as ex
-import egen_summary_stats as es
+import egen.egen_func as ef
+import egen.perturber_func as pf
+import egen.m2l_export_egen as ex
+import egen.egen_summary_stats as es
 import multiprocessing as mp
-import stats_utils
+import egen.stats_utils
 import time
 import numpy as np
 import os

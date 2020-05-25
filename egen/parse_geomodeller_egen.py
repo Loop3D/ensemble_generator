@@ -6,7 +6,7 @@
 # %%
 import pandas as pd
 import os
-import egen_func as ef
+import egen.egen_func as ef
 
 # debug - to be replaced with par file (or class??)
 path_to_geomodeller = 'C:\GeoModeller\GeoModeller4.0.8_x64_88b64e610d9'

@@ -1,7 +1,7 @@
 # testing and timing multiprocessing
 
 import multiprocessing as mp
-import m2l_export_egen as ex
+import egen.m2l_export_egen as ex
 import time
 
 start_time = time.time()

@@ -14,8 +14,8 @@ dircos2ddd(l,m,n)
 check_file_orient = file_orient[["azimuth", "dip"]].join(new_ori)
 
 #%% Testing contact orientations
-from perturber_func import perturb_interface
-from perturber_func import perturb_orient_vMF
+from egen.perturber_func import perturb_interface
+from egen.perturber_func import perturb_orient_vMF
 import os
 #windows
 os.chdir("C:/Users/Mark/Cloudstor/EGen/test_data3/output")
@@ -120,11 +120,11 @@ type = "GOCAD_LITHO"
 #mac
 directory = "/Users/marklindsay/cloudstor/EGen/geol-model-egen/test_data3_MDL/Models_Prelim_geophys/CURE"
 
-from egen_summary_stats import read_gocad_voxet
+from egen.egen_summary_stats import read_gocad_voxet
 litho_df,card,ent = read_gocad_voxet(directory, type, card=False, ent=False)
 
 #%% testing litho probability calc
-from stats_utils import litho_probabilities
+from egen.stats_utils import litho_probabilities
 
 #litho_df = litho_df[0]
 litho_prob = litho_probabilities(litho_df, 6, len(litho_df))
@@ -178,7 +178,7 @@ print("Elapsed time during the whole program in seconds:",
 
 
 #%% single cpu testing
-from stats_utils import uni_counts
+from egen.stats_utils import uni_counts
 
 t1_start = process_time()
 test_prob = uni_counts(litho_df, 5000)

@@ -3,8 +3,8 @@ import numpy as np
 import pandas as pd
 #from math import log, e
 import sys, os, glob
-from stats_utils import entropy_custom
-from stats_utils import litho_probabilites
+from egen.stats_utils import entropy_custom
+from egen.stats_utils import litho_probabilites
 
 
 #%%

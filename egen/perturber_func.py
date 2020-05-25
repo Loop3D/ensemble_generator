@@ -12,11 +12,11 @@ sys.path.append(path.abspath('C:/Users/Mark/Documents/GitHub/Loop3D/map2loop'))
 from map2loop import m2l_utils
 
 # this works but wants me to import all the packages listed in m2l_utils... not sure I want to do that.
-from m2l_utils_egen import ddd2dircos  # this import can be linked to m2l_utils once these functions are linked i.e. in the same or linked repos
-from m2l_utils_egen import dircos2ddd  # this import can be linked to m2l_utils once these functions are linked i.e. in the same or linked repos
-from spherical_utils import sample_vMF  # thanks to https://github.com/jasonlaska/spherecluster/
+from egen.m2l_utils_egen import ddd2dircos  # this import can be linked to m2l_utils once these functions are linked i.e. in the same or linked repos
+from egen.m2l_utils_egen import dircos2ddd  # this import can be linked to m2l_utils once these functions are linked i.e. in the same or linked repos
+from egen.spherical_utils import sample_vMF  # thanks to https://github.com/jasonlaska/spherecluster/
 # from egen_func import sample_vMF
-import m2l_utils_egen
+import egen.m2l_utils_egen
 
 # from jetbrains://pycharm/navigate/reference?project=geol-model-egen&path=python/m2l_utils_egen.py import dd2dircos
 
