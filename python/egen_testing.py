@@ -193,3 +193,13 @@ re.run_egen('../test_data3/EGen_par.py')
 
 #debug
 par_file = ('../test_data3/EGen_par.py')
+
+#%% testing task builder
+import pathlib
+from egen_func import task_builder
+
+filename = 'realInit.task'
+path = pathlib.Path('C:/Users/Mark/Cloudstor/EGen/ObjFunc_model') / filename
+egen_runs = 10
+
+task_builder(path, filename, egen_runs)
