@@ -182,6 +182,13 @@ for line in contents:
                 horizontal = 0
                 vertical = 0
                 influedistance = 0
+            else:
+                typef = 'infinite'
+                horizontal = 0
+                vertical = 0
+                influedistance = 0
+
+
 
             ostr = str(faultname) + ',' + str(red) + ',' + str(green) + ',' + str(blue) + ',' + str(
                 thickness) + ',' + str(horizontal) + ',' + str(vertical) + ',' + str(influedistance) + ',' + str(

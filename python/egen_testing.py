@@ -201,5 +201,10 @@ from egen_func import task_builder
 filename = 'realInit.task'
 path = pathlib.Path('C:/Users/Mark/Cloudstor/EGen/ObjFunc_model') / filename
 egen_runs = 10
-
+series_calc = 'all'
+krig_range = None
+interface = None
+orientation = None
+drift = None
+fault_calc = 'all'
 task_builder(path, filename, egen_runs)

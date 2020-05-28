@@ -328,23 +328,23 @@ def calc_voxet_ensemble(model_path, nx, ny, nz, model_from = None, model_to = No
 # debug
 filename = 'realInit.task'
 path = pathlib.Path('C:/Users/Mark/Cloudstor/EGen/ObjFunc_model') / filename
-egen_runs = 100
+egen_runs = 1
+
 
 
 
 def task_builder(path, filename, egen_runs, input='./output', *kwargs):
     '''speed increase with numpy... maybe? instead of pandas'''
     contents = pd.read_csv(path, sep='\t', header=None, quotechar='\0') # + '/' + filename, sep='\t', header=None)
-    #contents = task_file.readlines()
+    fault_info = pd.read_csv(path.parent / "fault_info.csv")#contents = task_file.readlines()
+    strat_info = pd.read_csv(path.parent / "strat.csv")
     #contents = (contents)
     # get first file part - everything up to where the data points are added
     end_line = contents[0]=='  Add3DInterfacesToFormation {'
     idx = [a for a, x in enumerate(end_line) if x] # make list of row indices where the string above is found
     task_pt1 = contents[0:(idx[0]-1)]
 
-    #task_output = open('task_test.task', 'w')
-    #task_output.write(str(task_pt1))
-    #task_output.close()
+
     for i in range(egen_runs):
         new_contacts = pd.read_csv(f'{path.parent}/output/contacts_{i}.csv')
         new_orientations = pd.read_csv(f'{path.parent}/output/contacts_orient_{i}.csv')
@@ -354,11 +354,12 @@ def task_builder(path, filename, egen_runs, input='./output', *kwargs):
 
         tmp_contact_formations = new_contacts.formation.unique()
         tmp_orient_formations = new_orientations.formation.unique()
-        tmp_cont_chunk = pd.DataFrame(['Geomodeller Task {']) #  build the 'chunk' of the task file with contact info
-        tmp_orient_chunk = pd.DataFrame(['Geomodeller Task {']) #  build the 'chunk' of the task file with orientation info
+         #  build the 'chunk' of the task file with contact info
+         #  build the 'chunk' of the task file with orientation info
         for k in range(len(tmp_contact_formations)):
             idx = new_contacts['formation']==tmp_contact_formations[k]
             tmp_contacts = new_contacts[idx]
+            tmp_cont_chunk = pd.DataFrame(['GeomodellerTask {'])
             tmp_cont_chunk = tmp_cont_chunk.append(['Add3DInterfacesToFormation {'])
             for l in range(len(tmp_contacts)):
                 tmp_cont_chunk = tmp_cont_chunk.append(['point {'])
@@ -366,10 +367,11 @@ def task_builder(path, filename, egen_runs, input='./output', *kwargs):
                 tmp_cont_chunk = tmp_cont_chunk.append([f'y: {tmp_contacts.iloc[l, 2]}'])
                 tmp_cont_chunk = tmp_cont_chunk.append([f'z: {tmp_contacts.iloc[l, 3]} }}'])
             tmp_cont_chunk = tmp_cont_chunk.append([f'formation: "{tmp_contact_formations[k]}" }}'])
-            #tmp_cont_chunk = tmp_cont_chunk.append([''])
+        tmp_cont_chunk = tmp_cont_chunk.append([f'}}'])
         for j in range(len(tmp_orient_formations)):
             idx = new_orientations['formation'] == tmp_orient_formations[j]
             tmp_orient = new_orientations[idx]
+            tmp_orient_chunk = pd.DataFrame(['GeomodellerTask {'])
             tmp_orient_chunk = tmp_orient_chunk.append(['Add3DFoliationToFormation {'])
             tmp_orient_chunk = tmp_orient_chunk.append([f'formation: "{tmp_orient_formations[j]}" {{'])
             for h in range(len(tmp_orient)):
@@ -382,7 +384,11 @@ def task_builder(path, filename, egen_runs, input='./output', *kwargs):
                 tmp_orient_chunk = tmp_orient_chunk.append([f'direction: {tmp_orient.iloc[h, 4]} }}'])
                 tmp_orient_chunk = tmp_orient_chunk.append([f'azimuth: {tmp_orient.iloc[h, 4]} }}'])
                 tmp_orient_chunk = tmp_orient_chunk.append([f'polarity: {tmp_orient.iloc[h, 6]} }}'])
-            tmp_orient_chunk = tmp_orient_chunk.append([f'}}'])
+        tmp_orient_chunk = tmp_orient_chunk.append([f'}}'])
+
+        full_task = task_pt1.append(tmp_cont_chunk)
+        full_task = full_task.append(tmp_orient_chunk)
+
             ####
             # Calculate model lines
 
@@ -390,11 +396,13 @@ def task_builder(path, filename, egen_runs, input='./output', *kwargs):
 
             # assign default parameters
         if series_calc is None:
-            series_c = 'all'
+            #series_c = 'all'
+            series_list = strat_info['series'].unique()
         else:
             series_list = series_calc
         if series_calc == 'all':
-            series_c = 'all'
+            #series_c = 'all'
+            series_list = strat_info['series'].unique()
 
         else:
             series_list = series_calc
@@ -408,57 +416,50 @@ def task_builder(path, filename, egen_runs, input='./output', *kwargs):
         if drift is None:
             drift = 1
 
-        calc_model_str1 = f'''\n
-        GeomodellerTask {{
-            ComputeModel {{
-                SeriesList {{'''
-        f.write(calc_model_str1)
+        calc_model_str1 = [f'''GeomodellerTask {{\nComputeModel {{\nSeriesList {{''']
+        #f.write(calc_model_str1)
+        full_task = full_task.append(calc_model_str1)
 
         for sc in range(len(series_list)):
-            calc_model_str_series_calc = f'''
-                    node: "{series_list[sc]}"'''
-            f.write(calc_model_str_series_calc)
+            calc_model_str_series_calc = [f'''node: "{series_list[sc]}"''']
 
-        calc_model_str_section_list = f'''}}
-                SectionList {{
-                    node: "all" }}'''
-        f.write(calc_model_str_section_list)
+        #    f.write(calc_model_str_series_calc)
+            full_task = full_task.append(calc_model_str_series_calc)
+
+        calc_model_str_section_list = [f'''}}\nSectionList {{\nnode: "all" }}''']
+        #f.write(calc_model_str_section_list)
+        full_task = full_task.append(calc_model_str_section_list)
 
         if fault_calc is not None:
-            calc_model_str_fault_calc1 = f'''
-                FaultList {{'''
-            f.write(calc_model_str_fault_calc1)
+            calc_model_str_fault_calc1 = [f'''\nFaultList {{''']
+        #    f.write(calc_model_str_fault_calc1)
+            full_task = full_task.append(calc_model_str_fault_calc1)
+
             # print(calc_model_str_fault_calc1)
             for fc in range(len(fault_calc)):
-                calc_model_str_fault_calc2 = f'''
-                    node: "{fault_calc[fc]}"'''
-                f.write(calc_model_str_fault_calc2)
-            calc_model_str_fault_calc3 = " }"
-            f.write(calc_model_str_fault_calc3)
+                calc_model_str_fault_calc2 = [f'''node: "{fault_info.iat[fc,0]}"''']
+                full_task = full_task.append(calc_model_str_fault_calc2)
+
+            calc_model_str_fault_calc3 = ["}"]
+        #   f.write(calc_model_str_fault_calc3)
+            full_task = full_task.append(calc_model_str_fault_calc3)
 
         for ss in range(len(series_list)):
-            calc_model_str2 = f'''
-                SeriesInterpolationParameters {{
-                    series: "{series_list[ss]}"
-                    Range: {krig_range}
-                    Contacts_Nugget_Effect: {interface}
-                    Gradients_Nugget_Effect: {orientation}
-                    FaultDriftEquationDegree: {drift} }}'''
-            f.write(calc_model_str2)
+            calc_model_str2 = [f'''\nSeriesInterpolationParameters {{\nseries: "{series_list[ss]}"\nRange: {krig_range}\nContacts_Nugget_Effect: {interface}\nGradients_Nugget_Effect: {orientation}\nFaultDriftEquationDegree: {drift} }}''']
+        #   f.write(calc_model_str2)
+            full_task = full_task.append(calc_model_str2)
 
-        calc_model_str3 = f'''
-            }}
-        }}\n
-        '''
-        f.write(calc_model_str3)
+        calc_model_str3 = [f'''\n}}\n}}\n''']
+        #f.write(calc_model_str3)
+        full_task = full_task.append(calc_model_str3)
 
         ####
-        calc_model_str4 = f'GeomodellerTask {{\n    SaveProjectAs {{\n        filename: "{path.parent}/ensemble/model_{i}.xml"\n    }}\n}}\n')
+        calc_model_str4 = [f'GeomodellerTask {{\n    SaveProjectAs {{\n        filename: "{path.parent}/ensemble/model_{i}.xml"\n    }}\n}}\n']
+        full_task = full_task.append(calc_model_str4)
 
 
 
-        full_task = task_pt1.append(tmp_cont_chunk)
-        full_task = full_task.append(tmp_orient_chunk)
+
         np.savetxt(f'{path.parent / path.stem}_{i}{path.suffix}', np.array(full_task), fmt='%s')
         #full_task.to_csv(f'{path.parent / path.stem}_{i}{path.suffix}', index=None, header=None, quoting=csv.QUOTE_NONE, quotechar="",  escapechar="\\")
         print(f'Run {i}')
