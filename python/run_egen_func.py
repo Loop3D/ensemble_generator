@@ -10,8 +10,8 @@ import os
 
 # debug
 # par_file = 'C:/Users/Mark/Cloudstor/EGen/test_data3/EGen_par.py'
-par_file = 'C:/Users/Mark/Cloudstor/EGen/ObjFunc_model/realInit_par.py'
-
+# par_file = 'C:/Users/Mark/Cloudstor/EGen/ObjFunc_model/realInit_par.py'
+par_file = 'C:/Users/Mark/Cloudstor/EGen/Geomodel_demo/Geomodel_par.py'
 
 def run_egen(par_file=None):
     #load Egen_par.py

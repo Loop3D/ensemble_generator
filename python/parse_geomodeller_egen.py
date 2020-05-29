@@ -10,7 +10,7 @@ import egen_func as ef
 
 # debug - to be replaced with par file (or class??)
 path_to_geomodeller = 'C:\GeoModeller\GeoModeller4.0.8_x64_88b64e610d9'
-path_to_model = 'C:/Users/Mark/Cloudstor/EGen/ObjFunc_model'
+path_to_model = 'C:/Users/Mark/Cloudstor/EGen/Geomodel_demo'
 xml_name = 'reallnit'
 
 os.chdir(path_to_model)

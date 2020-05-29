@@ -7,11 +7,14 @@
 import pandas as pd
 import os
 import egen_func as ef
+import pathlib
 
 # debug - to be replaced with par file (or class??)
 path_to_geomodeller = 'C:\GeoModeller\GeoModeller4.0.8_x64_88b64e610d9'
 path_to_model = 'C:/Users/Mark/Cloudstor/Projects/Paterson/Yeneena/3D-Paterson-FDS-Model2-16Mar20'
 xml_name = '3D-Paterson-FDS-Model2-16Mar20'
+
+path = pathlib.Path('C:/Users/Mark/Cloudstor/EGen/Geomodel_demo') # / filename
 
 os.chdir(path_to_model)
 ef.egen_paths(path_to_geomodeller, path_to_model)  # set paths
@@ -25,13 +28,14 @@ os.system('egen_batch.bat')
 
 #taskfile_path = path+root_name+'.task'
 tasks = open('project_export.task',"r")
+tasks = open(path)
 contents =tasks.readlines()
 tasks.close()
 
 
 #%% Parse 3D Interface Info
-os.chdir(path_to_model+'/output')
-allc=open(path+root_name+'_contacts.csv',"w")
+os.chdir(path.parent +'output')
+allc=open(path / 'output/contacts.csv',"w")
 allc.write('x,y,z,formation\n')
 i=0
 for line in contents:
@@ -58,7 +62,7 @@ allc.close()
 
 #%% Parse 3D Foliation Info
 
-allo=open(path+root_name+'_orientations.csv',"w")
+allo=open(path / 'output/contacts.csv',"w")
 allo.write('x,y,z,azimuth,dip,polarity,formation\n')
 i=0
 for line in contents:
@@ -94,7 +98,7 @@ allo.close()
 #%% Parse stratigraphy Info
 
 
-alls=open(path+root_name+'_strat.csv',"w")
+alls=open(path / 'output/contacts.csv',"w")
 alls.write('type,series,formation,relation\n')
 i=0
 
@@ -127,7 +131,7 @@ alls.close()
 
 #%% Parse Fault Info
 
-allf=open(path+root_name+'_fault.csv',"w")
+allf=open(path / 'output/contacts.csv',"w")
 allf.write('fault_name,red,green,blue,thickness,horizontal,vertical,influedistance,type\n')
 i=0
 

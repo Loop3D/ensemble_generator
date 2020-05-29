@@ -326,8 +326,8 @@ def calc_voxet_ensemble(model_path, nx, ny, nz, model_from = None, model_to = No
 #%% task builder
 
 # debug
-filename = 'realInit.task'
-path = pathlib.Path('C:/Users/Mark/Cloudstor/EGen/ObjFunc_model') / filename
+filename = 'Geomodel_demo.task'
+path = pathlib.Path('C:/Users/Mark/Cloudstor/EGen/Geomodel_demo') / filename
 egen_runs = 1
 
 
@@ -335,9 +335,10 @@ egen_runs = 1
 
 def task_builder(path, filename, egen_runs, input='./output', *kwargs):
     '''speed increase with numpy... maybe? instead of pandas'''
-    contents = pd.read_csv(path, sep='\t', header=None, quotechar='\0') # + '/' + filename, sep='\t', header=None)
-    fault_info = pd.read_csv(path.parent / "fault_info.csv")#contents = task_file.readlines()
-    strat_info = pd.read_csv(path.parent / "strat.csv")
+    #pd.options.display.float_format = '{:,.6f}'.format  # set float format (6 decimal places)
+    contents = pd.read_csv(path, sep='\t', header=None, quotechar='\0')  # + '/' + filename, sep='\t', header=None)
+    fault_info = pd.read_csv(path.parent / "output/fault_info.csv")  # contents = task_file.readlines()
+    strat_info = pd.read_csv(path.parent / "output/strat.csv")
     #contents = (contents)
     # get first file part - everything up to where the data points are added
     end_line = contents[0]=='  Add3DInterfacesToFormation {'
@@ -347,7 +348,11 @@ def task_builder(path, filename, egen_runs, input='./output', *kwargs):
 
     for i in range(egen_runs):
         new_contacts = pd.read_csv(f'{path.parent}/output/contacts_{i}.csv')
+        new_contacts = new_contacts.round(6)
+        new_contacts['formation'] = new_contacts['formation'].str.strip()
         new_orientations = pd.read_csv(f'{path.parent}/output/contacts_orient_{i}.csv')
+        new_orientations = new_orientations.round(6)
+        new_orientations['formation'] = new_orientations['formation'].str.strip()
         #p_idx = new_orientations['polarity'] == 0 #  replace polarity 1 = 'Normal_Polarity'; 0 = 'Reverse_Polarity'
         #new_orientations['polarity'][p_idx] = 'Reverse_Polarity' # this may cause trouble (chained indexing), I have changed the parser to not convert polarity flags
         #new_orientations['polarity'][p_idx==False] = 'Normal_Polarity'
@@ -356,10 +361,12 @@ def task_builder(path, filename, egen_runs, input='./output', *kwargs):
         tmp_orient_formations = new_orientations.formation.unique()
          #  build the 'chunk' of the task file with contact info
          #  build the 'chunk' of the task file with orientation info
+        tmp_cont_chunk = pd.DataFrame([])
+        tmp_orient_chunk = pd.DataFrame([])
         for k in range(len(tmp_contact_formations)):
             idx = new_contacts['formation']==tmp_contact_formations[k]
             tmp_contacts = new_contacts[idx]
-            tmp_cont_chunk = pd.DataFrame(['GeomodellerTask {'])
+            tmp_cont_chunk = tmp_cont_chunk.append(['\nGeomodellerTask {'])
             tmp_cont_chunk = tmp_cont_chunk.append(['Add3DInterfacesToFormation {'])
             for l in range(len(tmp_contacts)):
                 tmp_cont_chunk = tmp_cont_chunk.append(['point {'])
@@ -367,23 +374,26 @@ def task_builder(path, filename, egen_runs, input='./output', *kwargs):
                 tmp_cont_chunk = tmp_cont_chunk.append([f'y: {tmp_contacts.iloc[l, 2]}'])
                 tmp_cont_chunk = tmp_cont_chunk.append([f'z: {tmp_contacts.iloc[l, 3]} }}'])
             tmp_cont_chunk = tmp_cont_chunk.append([f'formation: "{tmp_contact_formations[k]}" }}'])
-        tmp_cont_chunk = tmp_cont_chunk.append([f'}}'])
+            tmp_cont_chunk = tmp_cont_chunk.append([f'}}'])
+        #tmp_cont_chunk = tmp_cont_chunk.append([f'}}'])
+
         for j in range(len(tmp_orient_formations)):
             idx = new_orientations['formation'] == tmp_orient_formations[j]
             tmp_orient = new_orientations[idx]
-            tmp_orient_chunk = pd.DataFrame(['GeomodellerTask {'])
+            tmp_orient_chunk = tmp_orient_chunk.append(['\nGeomodellerTask {'])
             tmp_orient_chunk = tmp_orient_chunk.append(['Add3DFoliationToFormation {'])
-            tmp_orient_chunk = tmp_orient_chunk.append([f'formation: "{tmp_orient_formations[j]}" {{'])
+            tmp_orient_chunk = tmp_orient_chunk.append([f'formation: "{tmp_orient_formations[j]}"'])
             for h in range(len(tmp_orient)):
                 tmp_orient_chunk = tmp_orient_chunk.append(['foliation {'])
                 tmp_orient_chunk = tmp_orient_chunk.append(['Point3D {'])
                 tmp_orient_chunk = tmp_orient_chunk.append([f'x: {tmp_orient.iloc[h, 1]}'])
                 tmp_orient_chunk = tmp_orient_chunk.append([f'y: {tmp_orient.iloc[h, 2]}'])
                 tmp_orient_chunk = tmp_orient_chunk.append([f'z: {tmp_orient.iloc[h, 3]} }}'])
-                tmp_orient_chunk = tmp_orient_chunk.append([f'dip: {tmp_orient.iloc[h, 5]} }}'])
-                tmp_orient_chunk = tmp_orient_chunk.append([f'direction: {tmp_orient.iloc[h, 4]} }}'])
-                tmp_orient_chunk = tmp_orient_chunk.append([f'azimuth: {tmp_orient.iloc[h, 4]} }}'])
+                tmp_orient_chunk = tmp_orient_chunk.append([f'dip: {tmp_orient.iloc[h, 5]}'])
+                tmp_orient_chunk = tmp_orient_chunk.append([f'direction: {tmp_orient.iloc[h, 4]}'])
+                tmp_orient_chunk = tmp_orient_chunk.append([f'azimuth: {tmp_orient.iloc[h, 4]}'])
                 tmp_orient_chunk = tmp_orient_chunk.append([f'polarity: {tmp_orient.iloc[h, 6]} }}'])
+            tmp_orient_chunk = tmp_orient_chunk.append([f'}}\n}}'])
         tmp_orient_chunk = tmp_orient_chunk.append([f'}}'])
 
         full_task = task_pt1.append(tmp_cont_chunk)
@@ -436,7 +446,7 @@ def task_builder(path, filename, egen_runs, input='./output', *kwargs):
             full_task = full_task.append(calc_model_str_fault_calc1)
 
             # print(calc_model_str_fault_calc1)
-            for fc in range(len(fault_calc)):
+            for fc in range(len(fault_info)):
                 calc_model_str_fault_calc2 = [f'''node: "{fault_info.iat[fc,0]}"''']
                 full_task = full_task.append(calc_model_str_fault_calc2)
 

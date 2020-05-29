@@ -1,0 +1,3 @@
+fault_name,series_stops_on_faults
+EW_Fault, Clastic_Series;
+NNW_Fault, Clastic_Series; Conglomerate_Series; Granite_Series;
