@@ -368,31 +368,31 @@ def task_builder(path, filename, egen_runs, input='./output', *kwargs):
             tmp_contacts = new_contacts[idx]
             tmp_cont_chunk = tmp_cont_chunk.append(['\nGeomodellerTask {'])
             tmp_cont_chunk = tmp_cont_chunk.append(['Add3DInterfacesToFormation {'])
+            tmp_cont_chunk = tmp_cont_chunk.append([f'\tformation: "{tmp_contact_formations[k]}"'])
             for l in range(len(tmp_contacts)):
                 tmp_cont_chunk = tmp_cont_chunk.append(['point {'])
-                tmp_cont_chunk = tmp_cont_chunk.append([f'x: {tmp_contacts.iloc[l, 1]}'])
-                tmp_cont_chunk = tmp_cont_chunk.append([f'y: {tmp_contacts.iloc[l, 2]}'])
-                tmp_cont_chunk = tmp_cont_chunk.append([f'z: {tmp_contacts.iloc[l, 3]} }}'])
-            tmp_cont_chunk = tmp_cont_chunk.append([f'formation: "{tmp_contact_formations[k]}" }}'])
+                tmp_cont_chunk = tmp_cont_chunk.append([f'x: {tmp_contacts.iloc[l, 0]}'])
+                tmp_cont_chunk = tmp_cont_chunk.append([f'y: {tmp_contacts.iloc[l, 1]}'])
+                tmp_cont_chunk = tmp_cont_chunk.append([f'z: {tmp_contacts.iloc[l, 2]} }}'])
             tmp_cont_chunk = tmp_cont_chunk.append([f'}}'])
-        #tmp_cont_chunk = tmp_cont_chunk.append([f'}}'])
+            tmp_cont_chunk = tmp_cont_chunk.append([f'}}'])
 
         for j in range(len(tmp_orient_formations)):
             idx = new_orientations['formation'] == tmp_orient_formations[j]
             tmp_orient = new_orientations[idx]
             tmp_orient_chunk = tmp_orient_chunk.append(['\nGeomodellerTask {'])
             tmp_orient_chunk = tmp_orient_chunk.append(['Add3DFoliationToFormation {'])
-            tmp_orient_chunk = tmp_orient_chunk.append([f'formation: "{tmp_orient_formations[j]}"'])
+            tmp_orient_chunk = tmp_orient_chunk.append([f'\tformation: "{tmp_orient_formations[j]}"'])
             for h in range(len(tmp_orient)):
                 tmp_orient_chunk = tmp_orient_chunk.append(['foliation {'])
                 tmp_orient_chunk = tmp_orient_chunk.append(['Point3D {'])
-                tmp_orient_chunk = tmp_orient_chunk.append([f'x: {tmp_orient.iloc[h, 1]}'])
-                tmp_orient_chunk = tmp_orient_chunk.append([f'y: {tmp_orient.iloc[h, 2]}'])
-                tmp_orient_chunk = tmp_orient_chunk.append([f'z: {tmp_orient.iloc[h, 3]} }}'])
-                tmp_orient_chunk = tmp_orient_chunk.append([f'dip: {tmp_orient.iloc[h, 5]}'])
-                tmp_orient_chunk = tmp_orient_chunk.append([f'direction: {tmp_orient.iloc[h, 4]}'])
-                tmp_orient_chunk = tmp_orient_chunk.append([f'azimuth: {tmp_orient.iloc[h, 4]}'])
-                tmp_orient_chunk = tmp_orient_chunk.append([f'polarity: {tmp_orient.iloc[h, 6]} }}'])
+                tmp_orient_chunk = tmp_orient_chunk.append([f'x: {tmp_orient.iloc[h, 0]}'])
+                tmp_orient_chunk = tmp_orient_chunk.append([f'y: {tmp_orient.iloc[h, 1]}'])
+                tmp_orient_chunk = tmp_orient_chunk.append([f'z: {tmp_orient.iloc[h, 2]} }}'])
+                tmp_orient_chunk = tmp_orient_chunk.append([f'\tdip: {tmp_orient.iloc[h, 4]}'])
+                tmp_orient_chunk = tmp_orient_chunk.append([f'\tdirection: {tmp_orient.iloc[h, 3]}'])
+                #tmp_orient_chunk = tmp_orient_chunk.append([f'\tazimuth: {tmp_orient.iloc[h, 3]}'])
+                tmp_orient_chunk = tmp_orient_chunk.append([f'\tpolarity: {tmp_orient.iloc[h, 5]} }}'])
             tmp_orient_chunk = tmp_orient_chunk.append([f'}}\n}}'])
         tmp_orient_chunk = tmp_orient_chunk.append([f'}}'])
 

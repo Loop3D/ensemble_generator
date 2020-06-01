@@ -125,7 +125,7 @@ def perturb_interface(samples, error_gps, file_type='contacts', distribution='un
         new_coords["formation"] = input_file["formation"]
         file_name = file_type + "_" + str(m) + ".csv"
         #print(file_name)
-        new_coords.to_csv(output_location + '/' + file_name)
+        new_coords.to_csv(output_location + '/' + file_name, index=False)
     return
 
 
