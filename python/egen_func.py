@@ -327,7 +327,8 @@ def calc_voxet_ensemble(model_path, nx, ny, nz, model_from = None, model_to = No
 
 # debug
 filename = 'Geomodel_demo.task'
-path = pathlib.Path('C:/Users/Mark/Cloudstor/EGen/Geomodel_demo') / filename
+path_2 = pathlib.PureWindowsPath('C:/Users/Mark/Cloudstor/EGen/Geomodel_demo') / filename
+path = pathlib.PurePosixPath('C:/Users/Mark/Cloudstor/EGen/Geomodel_demo') / filename
 egen_runs = 1
 
 
@@ -344,7 +345,9 @@ def task_builder(path, filename, egen_runs, input='./output', *kwargs):
     end_line = contents[0]=='  Add3DInterfacesToFormation {'
     idx = [a for a, x in enumerate(end_line) if x] # make list of row indices where the string above is found
     task_pt1 = contents[0:(idx[0]-1)]
-
+    voxet_path = path_2.parent / "voxets/"
+    if not os.path.exists("./voxets"):
+        os.makedirs("./voxets")
 
     for i in range(egen_runs):
         new_contacts = pd.read_csv(f'{path.parent}/output/contacts_{i}.csv')
@@ -394,7 +397,7 @@ def task_builder(path, filename, egen_runs, input='./output', *kwargs):
                 #tmp_orient_chunk = tmp_orient_chunk.append([f'\tazimuth: {tmp_orient.iloc[h, 3]}'])
                 tmp_orient_chunk = tmp_orient_chunk.append([f'\tpolarity: {tmp_orient.iloc[h, 5]} }}'])
             tmp_orient_chunk = tmp_orient_chunk.append([f'}}\n}}'])
-        tmp_orient_chunk = tmp_orient_chunk.append([f'}}'])
+        #tmp_orient_chunk = tmp_orient_chunk.append([f'}}'])
 
         full_task = task_pt1.append(tmp_cont_chunk)
         full_task = full_task.append(tmp_orient_chunk)
@@ -467,8 +470,45 @@ def task_builder(path, filename, egen_runs, input='./output', *kwargs):
         calc_model_str4 = [f'GeomodellerTask {{\n    SaveProjectAs {{\n        filename: "{path.parent}/ensemble/model_{i}.xml"\n    }}\n}}\n']
         full_task = full_task.append(calc_model_str4)
 
+        if litho is True:
+            # save out lithology voxet
+            vox_task1 = [f'''GeomodellerTask {{\nSaveLithologyVoxet {{\nnx: {nx}\nny: {ny}\nnz: {nz}\nLithologyVoxetFileStub: "{voxet_path}/model_{i}_gocad_litho"\n}}\n}}\n''']
+        else:
+            vox_task1 = [""]
+        if scalar is True:
+            vox_task2 = [f'''GeomodellerTask {{\nSavePotentialGradientVoxet {{\nnx: {nx}\nny: {ny}\nnz: {nz}\nJust_Gradients: false\nVoxetFileStub: "{voxet_path}/model_{i}_gocad_scalar"\n}}\n}}\n''']
+            # vox_task2 = ['''GeomodellerTask {
+            # SavePotentialGradientVoxet {
+            #     nx: %d
+            #     ny: %d
+            #     nz: %d
+            #
+            #     VoxetFileStub: "%s/model_%i_gocad_scalar"
+            #     }
+            # }\n'''] % (nx, ny, nz, voxet_path, i)
+        else:
+            vox_task2 = [""]
+        if scalar_grads is True:
+            vox_task3 = [f'''GeomodellerTask {{\nSavePotentialGradientVoxet {{\nnx: {nx}\nny: {ny}\nnz: {nz}\nJust_Gradients: true\nVoxetFileStub: "{voxet_path}/model_{i}_gocad_scalar_grads"\n}}\n}}\n''']
+            # vox_task3 = ['''GeomodellerTask {
+            # SavePotentialGradientVoxet {
+            #     nx: %d
+            #     ny: %d
+            #     nz: %d
+            #     Just_Gradients: true
+            #     VoxetFileStub: "%s/model_%i_gocad_scalar_grads"
+            #     }
+            # }\n'''] % (nx, ny, nz, voxet_path, i)
+        else:
+            vox_task3 = [""]
 
+        full_task = full_task.append(vox_task1)
+        full_task = full_task.append(vox_task2)
+        full_task = full_task.append(vox_task3)
 
+        close_task = ['''GeomodellerTask {\nCloseProjectNoGUI {\n}\n}''']
+
+        full_task = full_task.append(close_task)
 
         np.savetxt(f'{path.parent / path.stem}_{i}{path.suffix}', np.array(full_task), fmt='%s')
         #full_task.to_csv(f'{path.parent / path.stem}_{i}{path.suffix}', index=None, header=None, quoting=csv.QUOTE_NONE, quotechar="",  escapechar="\\")

@@ -220,7 +220,7 @@ def perturb_orient_vMF(samples, kappa, error_gps, file_type='contacts', loc_dist
             new_orient["azimuth"], new_orient["dip"] = new_ori[1], new_ori[0]
             file_name = file_type + "_orient_" + str(s) + ".csv"
 
-            new_orient.to_csv(output_location + '/' + file_name)
+            new_orient.to_csv(output_location + '/' + file_name, index=False)
 
     return
 

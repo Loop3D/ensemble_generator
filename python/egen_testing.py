@@ -207,4 +207,13 @@ interface = None
 orientation = None
 drift = None
 fault_calc = 'all'
+
+litho = True # True or comment out
+scalar = False# True or comment out
+scalar_grads = False # True or comment out
+
+# Voxet parameters
+nx = 50
+ny = 50
+nz = 50
 task_builder(path, filename, egen_runs)

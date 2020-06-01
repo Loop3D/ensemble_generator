@@ -73,4 +73,6 @@ orientation =  # nugget effect on orientation data; larger values = smoother mod
 
 card = # True or False
 ent = # True or False
-probability = # True or False
+propor = # True or False
+export =# True or False
+air = # True or False

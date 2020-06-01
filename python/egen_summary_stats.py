@@ -9,7 +9,7 @@ from stats_utils import litho_probabilites
 
 #%%
 
-def stats_gocad_voxet(directory, type, model_label='Anon', card=False, ent=False, propor=False, export=True):
+def stats_gocad_voxet(directory, type, model_label='Anon', card=False, ent=False, propor=False, export=True, air=False):
     # i want to specify the voxet name too, but first let's test just using the directory name
     #type = c("Card_VOXET", "Entropy_VOXET", "Frequency_VOXET", "OLS_VOXET", "P1_VOXET", "GOCAD_LITHO")
     # this function imports voxets that are output by Geomodeller and related CURE (Common Uncertainty Research Explorer).
@@ -21,8 +21,10 @@ def stats_gocad_voxet(directory, type, model_label='Anon', card=False, ent=False
     pattern = type
     if type == "GOCAD_LITHO":
         pattern_a = "*"
+    elif type == "gocad_litho":
+        pattern_a = "*"
     else:
-        pattern_a = None
+        pattern_a = type
     # generate list of voxet header files to import
     h_pattern = pattern_a + pattern + "*.vo"
     header_file = glob.glob(h_pattern)
@@ -62,7 +64,7 @@ def stats_gocad_voxet(directory, type, model_label='Anon', card=False, ent=False
         header = pd.read_csv(header_file[0], header=None, sep=" ", skiprows=4, nrows=8)
         header_units = pd.read_csv(header_file[0], header=None, sep=" ", skiprows=13, nrows=1)
     else:
-        print("Unknown voxet type: please enter voxet filename without the file extention")
+        print("Unknown voxet type: please enter voxet filename without the file extension")
         sys.exit()
 
     # create file names for export
@@ -106,11 +108,12 @@ def stats_gocad_voxet(directory, type, model_label='Anon', card=False, ent=False
     litho_df.columns = [prop_files] # label columns with model name
     # issue - the original voxet export includes 'air' - lithoID = 0, the recalculated model voxets do not.
     # we want air to be included, esp for geophys. So we create an 'air' mask using df indices where 0.0
-    air_idx = litho_df[['origin_GOCAD_LITHO.vop1']] == 0.0 # note this uses CURE naming # TODO change when orig voxet comes from EGEN
-    idx = air_idx
-    for i in range(litho_df.shape[1]-1): # subtract 1 from iterator because we start with one row
-        air_idx = np.concatenate([air_idx, idx], axis=1)
-    litho_df[air_idx] = 0.0
+    if air is True:
+        air_idx = litho_df[['origin_GOCAD_LITHO.vop1']] == 0.0 # note this uses CURE naming # TODO change when orig voxet comes from EGEN
+        idx = air_idx
+        for i in range(litho_df.shape[1]-1): # subtract 1 from iterator because we start with one row
+            air_idx = np.concatenate([air_idx, idx], axis=1)
+        litho_df[air_idx] = 0.0
 
 
     # calculate cardinality

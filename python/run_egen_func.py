@@ -130,7 +130,7 @@ import egen_summary_stats as es
     f.write(change_dir2)
 
     if litho is True:
-        egen_summary_litho_stats = f'''es.stats_gocad_voxet(directory = './voxets', type = "GOCAD_LITHO", model_label='{model_label}', card = {card}, ent = {ent})\n'''
+        egen_summary_litho_stats = f'''es.stats_gocad_voxet(directory = './voxets', type = "GOCAD_LITHO", model_label='{model_label}', card = {card}, ent = {ent}, propor= {propor}, export = {export}, air = {air})\n'''
         f.write(egen_summary_litho_stats)
     # if scalar is True:
     #     # TODO enter scalar voxet output
