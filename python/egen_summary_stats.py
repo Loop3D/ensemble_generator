@@ -109,7 +109,7 @@ def stats_gocad_voxet(directory, type, model_label='Anon', card=False, ent=False
     # issue - the original voxet export includes 'air' - lithoID = 0, the recalculated model voxets do not.
     # we want air to be included, esp for geophys. So we create an 'air' mask using df indices where 0.0
     if air is True:
-        air_idx = litho_df[['origin_GOCAD_LITHO.vop1']] == 0.0 # note this uses CURE naming # TODO change when orig voxet comes from EGEN
+        air_idx = litho_df[[f'orig_{type}.vop1']] == 0.0
         idx = air_idx
         for i in range(litho_df.shape[1]-1): # subtract 1 from iterator because we start with one row
             air_idx = np.concatenate([air_idx, idx], axis=1)

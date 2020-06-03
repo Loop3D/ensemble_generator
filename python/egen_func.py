@@ -1,7 +1,7 @@
 import numpy as np
 import sys, os, glob, pathlib, csv
 import pandas as pd
-from egen_class import egen_project
+from Geomodel_parameters import egen_project
 
 def egen_paths(geomodeller, model, data=None):
     """define paths for different parts of the process"""

@@ -69,8 +69,8 @@ class egen_project:
     #       Summary stats       #
     #############################
 
-    card = True  # True or False
-    ent = True  # True or False
-    propor = True  # True or False
-    export = True
-    air = False
+    card = True  # True or False - export a voxet representing model cardinality
+    ent = True  # True or False - export a voxet representing model entropy
+    propor = True  # True or False - export a voxet representing the proportions of modelled lithologies
+    export = True  # Export voxet - Can be 'False' if the arrays produced by the summary stats function are being passed directly to a downstream process
+    air = True  # is there an 'air' layer in the model? Will be yes if there is a DTM and/or the surface topo is not at the top of the model volume. Important for geodiversity and proportion calculations.
