@@ -44,7 +44,7 @@ from m2l_export import loop2geomodeller
 import egen_func
 #Windows
 #path must not have '/' at the end
-egen_func.egen_paths(geomodeller = r"C:\GeoModeller\GeoModeller4.0.8_x64_88b64e610d9" , model = r"C:/Users/Mark/Cloudstor/EGen/test_data3")
+egen_func.egen_paths(geomodeller = r"C:\GeoModeller\GeoModeller4.0.8_x64_88b64e610d9" , model = r"C:/Users/Mark/Cloudstor/EGen/Geomodel_demo")
 egen_func.egen_calc_original('model_0.task')
 egen_func.egen_orig_model_voxets(30, 30, 30, litho=True)
 egen_func.egen_create_batch('model_0.task', 'model_1.task', 'model_2.task', 'model_3.task', 'model_4.task', 'model_5.task', 'model_6.task', 'model_7.task', 'model_8.task', 'model_9.task', 'model_10.task')
@@ -57,6 +57,11 @@ egen_func.egen_create_voxet_ensemble_batch(11)
 test_data_name='test_data3'
 
 test_data_path='C:/Users/Mark/Cloudstor/EGen/test_data3'
+
+task_list = list(np.zeros(100))
+for x in range(100):
+    task_list[x] = f'Geomodel_demo_{x}.task'
+egen_func.egen_create_batch(task_list)
 
 #os.chdir(test_data_path)
 os.chdir(test_data_path)
@@ -198,22 +203,32 @@ par_file = ('../test_data3/EGen_par.py')
 import pathlib
 from egen_func import task_builder
 
-filename = 'realInit.task'
-path = pathlib.Path('C:/Users/Mark/Cloudstor/EGen/ObjFunc_model') / filename
-egen_runs = 10
-series_calc = 'all'
-krig_range = None
-interface = None
-orientation = None
-drift = None
-fault_calc = 'all'
+#filename = 'realInit.task'
+#path = pathlib.Path('C:/Users/Mark/Cloudstor/EGen/ObjFunc_model') / filename
 
-litho = True # True or comment out
-scalar = False# True or comment out
-scalar_grads = False # True or comment out
+filename = 'Geomodel_demo.task'
+path = 'C:/Users/Mark/Cloudstor/EGen/Geomodel_demo/' # / filename
+#par_file = path.parent / 'Geomodel_par.py'
+par_file = 'Geomodel_par.py'
+# exec(open(par_file).read())
+# series_calc = series_list
 
-# Voxet parameters
-nx = 50
-ny = 50
-nz = 50
-task_builder(path, filename, egen_runs)
+task_builder(path, filename)
+#
+# egen_runs = 10
+# series_calc = None
+# krig_range = None
+# interface = None
+# orientation = None
+# drift = None
+# fault_calc = 'all'
+#
+# litho = True # True or comment out
+# scalar = False# True or comment out
+# scalar_grads = False # True or comment out
+#
+# # Voxet parameters
+# nx = 50
+# ny = 50
+# nz = 50
+# task_builder(path, filename, egen_runs)

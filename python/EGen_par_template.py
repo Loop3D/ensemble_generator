@@ -63,10 +63,10 @@ loc_distribution =
 
 series_list = 'all' # list of series to calculate
 fault_list = None
-krig_range =  # kriging range
-interface =  # nugget effect on interface; larger values = smoother model (less adherence to the data) default = 0.000001
-orientation =  # nugget effect on orientation data; larger values = smoother model (less adherence to the data) default = 0.01
-
+krig_range =  None # kriging range
+interface =  None # nugget effect on interface; larger values = smoother model (less adherence to the data) default = 0.000001.  Set to None for default value
+orientation =  None # nugget effect on orientation data; larger values = smoother model (less adherence to the data) default = 0.01.  Set to None for default value
+drift = None # Drift degree - 0 (no drift or trend), 1 (linear, tends towards planar), 2 (quadratic, tends to parabolic). Default = 1.  Set to None for default value
 #############################
 #       Summary stats       #
 #############################

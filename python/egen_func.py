@@ -1,6 +1,7 @@
 import numpy as np
 import sys, os, glob, pathlib, csv
 import pandas as pd
+from egen_class import egen_project
 
 def egen_paths(geomodeller, model, data=None):
     """define paths for different parts of the process"""
@@ -161,10 +162,10 @@ def egen_create_batch(*tasks): # need to fix how the tasks args can be added to 
     '''create batch file .bat for windows for correct sequence of task file execution'''
     # create a switch for linux - .sh and path setting will be different
     task_list = [None] * len(tasks)
-    batch = f"SET PATH=%PATH%;{path_geomodeller1}\n"
+    batch = f"SET PATH=%PATH%;{egen_project.path_to_geomodeller}\n"
     for i in range(0, len(tasks)):
         batch = batch + "geomodellerbatch " + tasks[i] + "\n"
-    egen_batch = open(f'{path_model}/output/egen_batch.bat', "w")
+    egen_batch = open(f'{egen_project.path_to_model}/output/egen_batch.bat', "w")
     egen_batch.write(batch)
     egen_batch.close()
     return
@@ -325,18 +326,13 @@ def calc_voxet_ensemble(model_path, nx, ny, nz, model_from = None, model_to = No
 
 #%% task builder
 
-# debug
-filename = 'Geomodel_demo.task'
-path_2 = pathlib.PureWindowsPath('C:/Users/Mark/Cloudstor/EGen/Geomodel_demo') / filename
-path = pathlib.PurePosixPath('C:/Users/Mark/Cloudstor/EGen/Geomodel_demo') / filename
-egen_runs = 1
-
-
-
-
-def task_builder(path, filename, egen_runs, input='./output', *kwargs):
+def task_builder(path, filename):
+#def task_builder(path, egen_runs, series_calc=None, krig_range=None, interface=None, orientation=None, drift=None, fault_calc=None, litho=True, scalar=False, scalar_grads=False):
     '''speed increase with numpy... maybe? instead of pandas'''
-    #pd.options.display.float_format = '{:,.6f}'.format  # set float format (6 decimal places)
+    path = pathlib.PurePosixPath(path) / filename
+    #par_file = path.parent / par_file
+    #exec(open(path.parent / par_file).read())
+    #print(egen_runs)
     contents = pd.read_csv(path, sep='\t', header=None, quotechar='\0')  # + '/' + filename, sep='\t', header=None)
     fault_info = pd.read_csv(path.parent / "output/fault_info.csv")  # contents = task_file.readlines()
     strat_info = pd.read_csv(path.parent / "output/strat.csv")
@@ -345,11 +341,11 @@ def task_builder(path, filename, egen_runs, input='./output', *kwargs):
     end_line = contents[0]=='  Add3DInterfacesToFormation {'
     idx = [a for a, x in enumerate(end_line) if x] # make list of row indices where the string above is found
     task_pt1 = contents[0:(idx[0]-1)]
-    voxet_path = path_2.parent / "voxets/"
+    voxet_path = path.parent / "voxets/"
     if not os.path.exists("./voxets"):
         os.makedirs("./voxets")
 
-    for i in range(egen_runs):
+    for i in range(egen_project.egen_runs):
         new_contacts = pd.read_csv(f'{path.parent}/output/contacts_{i}.csv')
         new_contacts = new_contacts.round(6)
         new_contacts['formation'] = new_contacts['formation'].str.strip()
@@ -408,25 +404,22 @@ def task_builder(path, filename, egen_runs, input='./output', *kwargs):
             #
 
             # assign default parameters
-        if series_calc is None:
-            #series_c = 'all'
-            series_list = strat_info['series'].unique()
-        else:
-            series_list = series_calc
-        if series_calc == 'all':
+        if egen_project.series_list is None:
             #series_c = 'all'
             series_list = strat_info['series'].unique()
 
-        else:
-            series_list = series_calc
+        if egen_project.series_list == 'all':
+            series_list = strat_info['series'].unique()
 
-        if krig_range is None:
+
+
+        if egen_project.krig_range is None:
             krig_range = 10000.0
-        if interface is None:
+        if egen_project.interface is None:
             interface = 0.000001
-        if orientation is None:
+        if egen_project.orientation is None:
             orientation = 0.01
-        if drift is None:
+        if egen_project.drift is None:
             drift = 1
 
         calc_model_str1 = [f'''GeomodellerTask {{\nComputeModel {{\nSeriesList {{''']
@@ -443,7 +436,7 @@ def task_builder(path, filename, egen_runs, input='./output', *kwargs):
         #f.write(calc_model_str_section_list)
         full_task = full_task.append(calc_model_str_section_list)
 
-        if fault_calc is not None:
+        if egen_project.fault_list is not None:
             calc_model_str_fault_calc1 = [f'''\nFaultList {{''']
         #    f.write(calc_model_str_fault_calc1)
             full_task = full_task.append(calc_model_str_fault_calc1)
@@ -470,13 +463,13 @@ def task_builder(path, filename, egen_runs, input='./output', *kwargs):
         calc_model_str4 = [f'GeomodellerTask {{\n    SaveProjectAs {{\n        filename: "{path.parent}/ensemble/model_{i}.xml"\n    }}\n}}\n']
         full_task = full_task.append(calc_model_str4)
 
-        if litho is True:
+        if egen_project.litho is True:
             # save out lithology voxet
-            vox_task1 = [f'''GeomodellerTask {{\nSaveLithologyVoxet {{\nnx: {nx}\nny: {ny}\nnz: {nz}\nLithologyVoxetFileStub: "{voxet_path}/model_{i}_gocad_litho"\n}}\n}}\n''']
+            vox_task1 = [f'''GeomodellerTask {{\nSaveLithologyVoxet {{\nnx: {egen_project.nx}\nny: {egen_project.ny}\nnz: {egen_project.nz}\nLithologyVoxetFileStub: "{voxet_path}/model_{i}_gocad_litho"\n}}\n}}\n''']
         else:
             vox_task1 = [""]
-        if scalar is True:
-            vox_task2 = [f'''GeomodellerTask {{\nSavePotentialGradientVoxet {{\nnx: {nx}\nny: {ny}\nnz: {nz}\nJust_Gradients: false\nVoxetFileStub: "{voxet_path}/model_{i}_gocad_scalar"\n}}\n}}\n''']
+        if egen_project.scalar is True:
+            vox_task2 = [f'''GeomodellerTask {{\nSavePotentialGradientVoxet {{\nnx: {egen_project.nx}\nny: {egen_project.ny}\nnz: {egen_project.nz}\nJust_Gradients: false\nVoxetFileStub: "{voxet_path}/model_{i}_gocad_scalar"\n}}\n}}\n''']
             # vox_task2 = ['''GeomodellerTask {
             # SavePotentialGradientVoxet {
             #     nx: %d
@@ -488,8 +481,8 @@ def task_builder(path, filename, egen_runs, input='./output', *kwargs):
             # }\n'''] % (nx, ny, nz, voxet_path, i)
         else:
             vox_task2 = [""]
-        if scalar_grads is True:
-            vox_task3 = [f'''GeomodellerTask {{\nSavePotentialGradientVoxet {{\nnx: {nx}\nny: {ny}\nnz: {nz}\nJust_Gradients: true\nVoxetFileStub: "{voxet_path}/model_{i}_gocad_scalar_grads"\n}}\n}}\n''']
+        if egen_project.scalar_grads is True:
+            vox_task3 = [f'''GeomodellerTask {{\nSavePotentialGradientVoxet {{\nnx: {egen_project.nx}\nny: {egen_project.ny}\nnz: {egen_project.nz}\nJust_Gradients: true\nVoxetFileStub: "{voxet_path}/model_{i}_gocad_scalar_grads"\n}}\n}}\n''']
             # vox_task3 = ['''GeomodellerTask {
             # SavePotentialGradientVoxet {
             #     nx: %d
