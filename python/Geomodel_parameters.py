@@ -5,6 +5,8 @@ class egen_project:
 
     model_label = 'Geomodel_demo'
     source_geomodeller = True  # True or False
+    model_task = 'Geomodel_demo.task'
+    model_xml = 'Geomodel_demo.xml'
     #############################
     #           Paths           #
     #############################

@@ -192,9 +192,10 @@ np.mean(data - test_data)
 #%%
 # testing run_egen
 
-import run_egen_func as re
 
-re.run_egen('../test_data3/EGen_par.py')
+import run_egen_func as re
+class_file = 'Geomodel_parameters'
+re.run_egen(class_file)
 
 #debug
 par_file = ('../test_data3/EGen_par.py')
@@ -232,3 +233,13 @@ task_builder(path, filename)
 # ny = 50
 # nz = 50
 # task_builder(path, filename, egen_runs)
+
+#%% Parse task testing
+
+import egen_parse_geomodeller as ep
+ep.parse_gm_task('C:/Users/Mark/Cloudstor/EGen/Geomodel_demo/Geomodel_demo.task')
+model_task = 'C:/Users/Mark/Cloudstor/EGen/Geomodel_demo/Geomodel_demo.task'
+
+#%%
+import egen_func as ef
+ef.egen_xml_to_task(path_to_model, model_xml=model_xml, model_task=model_task)

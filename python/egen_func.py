@@ -31,30 +31,30 @@ def egen_paths(geomodeller, model, data=None):
     return #path_geomodeller1, path_geomodeller2, path_model, path_to_model, path_output
 
 
-def egen_xml_to_task(model_name):
+def egen_xml_to_task(path_to_model, model_xml, model_task):
     """generate task file from xml"""
     # emulates exporter.task
     # path_model; path_outputs should be prior set with egen paths
     # paths areas input, so can be explicit or relative.
     import os
-    global g_model_name  # name of model without .xml for naming use in exports etc.
-    if model_name.find(".xml") == -1:
-        model_name = model_name + str(".xml")
-    if model_name.find(".xml") != -1:
-        g_model_name = model_name
+    global g_model_xml  # name of model without .xml for naming use in exports etc.
+    if model_xml.find(".xml") == -1:
+        model_xml = model_xml + str(".xml")
+    if model_xml.find(".xml") != -1:
+        g_model_xml = model_xml
     else:
-        g_model_name = model_name.replace(".xml", "")
-    if not os.path.exists(path_output):
-        os.makedirs(path_output)
-    orig_task = open(f'{path_output}/xml_to_task.task', "w")
+        g_model_xml = model_xml.replace(".xml", "")
+    # if not os.path.exists(path_output):
+    #     os.makedirs(path_output)
+    orig_task = open(f'{path_to_model}/xml_to_task.task', "w")
     task = f'''GeomodellerTask {{
         WriteBatchFile {{
-            filename: "{path_model}/{model_name}"
-                Task_Name: "{path_output}/project_export.task"
+            filename: "{path_to_model}/{model_xml}"
+                Task_Name: "{path_to_model}/{model_task}"
                 convertSection_InterfacesTo3D: true
                 convertSection_FoliationTo3D: true
                 exportBoreholesToCSV: false
-                csv_path: "{path_output}/"
+                csv_path: "{path_to_model}/output/"
                 exportToGeomodellerTempDirectory: false
             }}
         }}'''
@@ -63,12 +63,12 @@ def egen_xml_to_task(model_name):
     return
 
 
-def egen_calc_original(model_name):
+def egen_calc_original(model_xml):
     '''calculate original model'''
-    global g_model_name
-    g_model_name = model_name
+    global g_model_xml
+    g_model_xml = model_xml
 
-    orig_task = open(f'{path_output}/calc_{model_name}', "w")
+    orig_task = open(f'{path_output}/calc_{model_xml}', "w")
     task = '''GeomodellerTask {
     OpenProjectNoGUI {
         filename: "%s/%s"
@@ -97,7 +97,7 @@ GeomodellerTask {
     CloseProjectNoGUI {
     }
 }
-    ''' % (path_model, g_model_name, path_model, g_model_name)
+    ''' % (path_model, g_model_xml, path_model, g_model_xml)
     orig_task.write(task)
     orig_task.close()
     return
@@ -111,7 +111,7 @@ def egen_orig_model_voxets(nx, ny, nz, litho=None, scalar=None, scalar_grads=Non
     OpenProjectNoGUI {
         filename: "%s/%s"
     }
-}\n''' % (path_model, g_model_name)
+}\n''' % (path_model, g_model_xml)
     if litho is not None:
         # save out lithology voxet
         task1 = '''GeomodellerTask {
@@ -211,7 +211,7 @@ def egen_MC_cokrig_params(range = None, interface = None, orientation = None, dr
         drift = 1
     task = f'''GeomodellerTask {{
     OpenProjectNoGUI {{
-        filename: "{path_model}/{g_model_name}"
+        filename: "{path_model}/{g_model_xml}"
     }}
     }}\n
     GeomodellerTask {{
@@ -240,7 +240,7 @@ def egen_MC_cokrig_params(range = None, interface = None, orientation = None, dr
     egen_interpolate.close()
     return
 
-def calc_voxet_ensemble(model_path, nx, ny, nz, model_from = None, model_to = None, litho = None, scalar=None, scalar_grads=None):
+def calc_voxet_ensemble(path_model, nx, ny, nz, model_from = None, model_to = None, litho = None, scalar=None, scalar_grads=None):
     """task for calculating and an ensemble of models, then
     exporting voxets from the original model - litho, scalar, gradients etc"""
     """assumes you want the same voxel parameters for all voxets"""
@@ -250,9 +250,9 @@ def calc_voxet_ensemble(model_path, nx, ny, nz, model_from = None, model_to = No
     model_from, model_to = options here for splitting the ensemble into group for calc on multiple cores
     litho, scalar, scalar_grads = None. Set to 'True' to boolean to export litho, scalar
      scalar gradient voxets (gocad binary format).'''
-    #task_path = model_path
-    ensemble_path = model_path + "/ensemble"
-    os.chdir(model_path)
+    #task_path = path_model
+    ensemble_path = path_model + "/ensemble"
+    os.chdir(path_model)
     if not os.path.exists("./voxets"):
         os.makedirs("./voxets")
 
@@ -272,12 +272,12 @@ def calc_voxet_ensemble(model_path, nx, ny, nz, model_from = None, model_to = No
 
     model_voxet = open(f'{ensemble_path}/model_{model_from}_{model_to}_voxet.task', "w")
     for m in range(model_from, model_to):
-        model_name = xml_names[m]
+        model_xml = xml_names[m]
         open_task = '''GeomodellerTask {
             OpenProjectNoGUI {
                 filename: "%s"
             }
-        }\n''' % (model_name)
+        }\n''' % (model_xml)
         if litho is not None:
             # save out lithology voxet
             task1 = '''GeomodellerTask {
