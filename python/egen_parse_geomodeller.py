@@ -461,3 +461,5 @@ def parse_gm_task(model_task):
         i = i + 1
 
     allp.close()
+
+    os.chdir(path.parent)

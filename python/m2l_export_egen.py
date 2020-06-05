@@ -50,13 +50,13 @@ def l2gm_ensemble(model_path, tmp_path, output_path, dtm_file, save_faults, mode
     start_time = time.time()
     # run project parameters file
     os.chdir(model_path)  # path defined by egen_paths function
-    exec(open(
-        "egen_config.py").read())  # this assumes model is coming from map2loop, can make another for those comign from geomodeller (e.g. via xml parser)
+    #exec(open(
+    #    "egen_config.py").read())  # this assumes model is coming from map2loop, can make another for those comign from geomodeller (e.g. via xml parser)
     crs = pyproj.CRS.from_epsg(''.join([i for i in dst_crs['init'] if i.isdigit()]))  # m2l naming dependency = dst_crs
     bbox = (minx, miny, maxx, maxy, model_top, model_base)  # m2l naming dependency = minx, miny, maxx, maxy, model_top, model_bottom
 
-    if not os.path.exists("./tasks"):
-        os.makedirs("./tasks")
+    # if not os.path.exists("./tasks"):
+    #     os.makedirs("./tasks")
     if not os.path.exists("./ensemble"):
         os.makedirs("./ensemble")
 
@@ -68,7 +68,8 @@ def l2gm_ensemble(model_path, tmp_path, output_path, dtm_file, save_faults, mode
     for s in range(model_from, model_to):
         loctime = time.localtime(time.time())
 
-        f = open(model_path + '/model_' + str(s) + '.task', 'w')
+        f = open(model_path + '/orig_model.task', 'w')
+        #f = open(model_path + '/model_' + str(s) + '.task', 'w')
         f.write('#---------------------------------------------------------------\n')
         f.write('#-----------------------Project Header-----------------------\n')
         f.write('#---------------------------------------------------------------\n')

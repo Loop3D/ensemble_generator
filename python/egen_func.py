@@ -1,7 +1,7 @@
 import numpy as np
-import sys, os, glob, pathlib, csv
+import sys, os, glob, pathlib, csv, importlib
 import pandas as pd
-from Geomodel_parameters import egen_project
+#from Geomodel_parameters import egen_project
 
 def egen_paths(geomodeller, model, data=None):
     """define paths for different parts of the process"""
@@ -69,83 +69,85 @@ def egen_calc_original(model_xml):
     g_model_xml = model_xml
 
     orig_task = open(f'{path_output}/calc_{model_xml}', "w")
-    task = '''GeomodellerTask {
-    OpenProjectNoGUI {
-        filename: "%s/%s"
-        }
-    }
-GeomodellerTask {
-    ComputeModel {
-        SeriesList {
+    task = f'''GeomodellerTask {{
+    OpenProjectNoGUI {{
+        filename: "{path_model}/{g_model_xml}"
+        }}
+    }}
+GeomodellerTask {{
+    ComputeModel {{
+        SeriesList {{
             node: "all"
-        }
-        FaultList {
+        }}
+        FaultList {{
             node: "all"
-        }
-        SectionList {
+        }}
+        SectionList {{
             node: "all"
-        }
-    }
-}
-GeomodellerTask {
-    SaveProjectAs {
-        filename: "%s/%s"
+        }}
+    }}
+}}
+
+
+GeomodellerTask {{
+    SaveProjectAs {{
+        filename: "{path_model}/{g_model_xml}"
         log: "projectsave.rpt"
-        }
-    }
-GeomodellerTask {
-    CloseProjectNoGUI {
-    }
-}
-    ''' % (path_model, g_model_xml, path_model, g_model_xml)
+        }}
+    }}
+GeomodellerTask {{
+    CloseProjectNoGUI {{
+    }}
+}}
+    '''
     orig_task.write(task)
     orig_task.close()
     return
 
 
-def egen_orig_model_voxets(nx, ny, nz, litho=None, scalar=None, scalar_grads=None):
+def egen_orig_model_voxet(path_to_model, model_xml, nx, ny, nz, litho=True, scalar=False, scalar_grads=False):
     """task for exporting voxets from the original model - litho, scalar, gradients etc"""
     """assumes you want the same voxel parameters for all voxets"""
     """if different cell sizes are needed, repeat this function with the appropriate params and voxet"""
-    open_task = '''GeomodellerTask {
-    OpenProjectNoGUI {
-        filename: "%s/%s"
-    }
-}\n''' % (path_model, g_model_xml)
-    if litho is not None:
+    open_task = f'''GeomodellerTask {{
+    OpenProjectNoGUI {{
+        filename: {path_to_model}/{model_xml}"
+    }}
+}}\n'''
+    if litho is True:
         # save out lithology voxet
-        task1 = '''GeomodellerTask {
-                SaveLithologyVoxet {
-                    nx:%d
-                    ny:%d
-                    nz:%d
-                    LithologyVoxetFileStub: "%s/orig_gocad_litho"
-                    }
-                }\n''' % (nx, ny, nz, path_output)
+        task1 = f'''GeomodellerTask {{
+                SaveLithologyVoxet {{
+                    nx:{nx}
+                    ny:{ny}
+                    nz:{nz}
+                    LithologyVoxetFileStub: "{path_to_model}/voxets/orig_gocad_litho"
+                    }}
+                }}\n'''
     else:
         task1 = ""
-    if scalar is not None:
-        task2 = '''GeomodellerTask {
-                SavePotentialGradientVoxet {
-                    nx: %d
-                    ny: %d
-                    nz: %d
+    if scalar is True:
+        task2 = f'''GeomodellerTask {{
+                SavePotentialGradientVoxet {{
+                    nx:{nx}
+                    ny:{ny}
+                    nz:{nz}
                     Just_Gradients: false
-                    VoxetFileStub: "%s/orig_gocad_scalar"
-                    }
-                }\n''' % (nx, ny, nz, path_output)
+                    VoxetFileStub: "{path_to_model}/voxets/orig_gocad_scalar"
+                    }}
+                }}\n'''
     else:
         task2 = ""
-    if scalar_grads is not None:
-        task3 = '''GeomodellerTask {
-                SavePotentialGradientVoxet {
-                    nx: %d
-                    ny: %d
-                    nz: %d
+    if scalar_grads is True:
+        task3 = f'''GeomodellerTask {{
+                SavePotentialGradientVoxet {{
+                    nx:{nx}
+                    ny:{ny}
+                    nz:{nz}
                     Just_Gradients: true
-                    VoxetFileStub: "%s/orig_gocad_scalar_grads"
-                    }
-                }\n''' % (nx, ny, nz, path_output)
+                    VoxetFileStub: "{path_to_model}/voxets/orig_gocad_scalar_grads"
+                    }}
+                }}\n'''
     else:
         task3 = ""
     close_task = '''GeomodellerTask {
@@ -162,10 +164,10 @@ def egen_create_batch(*tasks): # need to fix how the tasks args can be added to 
     '''create batch file .bat for windows for correct sequence of task file execution'''
     # create a switch for linux - .sh and path setting will be different
     task_list = [None] * len(tasks)
-    batch = f"SET PATH=%PATH%;{egen_project.path_to_geomodeller}\n"
+    batch = f"SET PATH=%PATH%;{path_geomodeller1}\n"
     for i in range(0, len(tasks)):
         batch = batch + "geomodellerbatch " + tasks[i] + "\n"
-    egen_batch = open(f'{egen_project.path_to_model}/output/egen_batch.bat', "w")
+    egen_batch = open(f'{path_model}/egen_batch.bat', "w")
     egen_batch.write(batch)
     egen_batch.close()
     return
@@ -176,7 +178,7 @@ def egen_create_batch_auto(tasks, run): # need to fix how the tasks args can be 
 
     # create a switch for linux - .sh and path setting will be different
     batch1 = f"SET PATH=%PATH%;{path_geomodeller1}\n"
-    egen_batch = open(f'{path_model}/egen_batch_{run}.bat', "w")
+    egen_batch = open(f'{path_model}/ensemble/egen_batch_{run}.bat', "w")
     egen_batch.write(batch1)
     for m in range(0, len(tasks)):
         batch2 = "geomodellerbatch " + str(tasks[m]) + "\n"
@@ -326,10 +328,13 @@ def calc_voxet_ensemble(path_model, nx, ny, nz, model_from = None, model_to = No
 
 #%% task builder
 
-def task_builder(path, filename):
+def task_builder(path, filename, class_file):
 #def task_builder(path, egen_runs, series_calc=None, krig_range=None, interface=None, orientation=None, drift=None, fault_calc=None, litho=True, scalar=False, scalar_grads=False):
     '''speed increase with numpy... maybe? instead of pandas'''
+    func_params = importlib.import_module(class_file)
     path = pathlib.PurePosixPath(path) / filename
+    if not os.path.exists("./ensemble"):
+        os.makedirs("./ensemble")
     #par_file = path.parent / par_file
     #exec(open(path.parent / par_file).read())
     #print(egen_runs)
@@ -345,7 +350,7 @@ def task_builder(path, filename):
     if not os.path.exists("./voxets"):
         os.makedirs("./voxets")
 
-    for i in range(egen_project.egen_runs):
+    for i in range(func_params.egen_project.egen_runs):
         new_contacts = pd.read_csv(f'{path.parent}/output/contacts_{i}.csv')
         new_contacts = new_contacts.round(6)
         new_contacts['formation'] = new_contacts['formation'].str.strip()
@@ -404,22 +409,22 @@ def task_builder(path, filename):
             #
 
             # assign default parameters
-        if egen_project.series_list is None:
+        if func_params.egen_project.series_list is None:
             #series_c = 'all'
             series_list = strat_info['series'].unique()
 
-        if egen_project.series_list == 'all':
+        if func_params.egen_project.series_list == 'all':
             series_list = strat_info['series'].unique()
 
 
 
-        if egen_project.krig_range is None:
+        if func_params.egen_project.krig_range is None:
             krig_range = 10000.0
-        if egen_project.interface is None:
+        if func_params.egen_project.interface is None:
             interface = 0.000001
-        if egen_project.orientation is None:
+        if func_params.egen_project.orientation is None:
             orientation = 0.01
-        if egen_project.drift is None:
+        if func_params.egen_project.drift is None:
             drift = 1
 
         calc_model_str1 = [f'''GeomodellerTask {{\nComputeModel {{\nSeriesList {{''']
@@ -436,7 +441,7 @@ def task_builder(path, filename):
         #f.write(calc_model_str_section_list)
         full_task = full_task.append(calc_model_str_section_list)
 
-        if egen_project.fault_list is not None:
+        if func_params.egen_project.fault_list is not None:
             calc_model_str_fault_calc1 = [f'''\nFaultList {{''']
         #    f.write(calc_model_str_fault_calc1)
             full_task = full_task.append(calc_model_str_fault_calc1)
@@ -463,13 +468,13 @@ def task_builder(path, filename):
         calc_model_str4 = [f'GeomodellerTask {{\n    SaveProjectAs {{\n        filename: "{path.parent}/ensemble/model_{i}.xml"\n    }}\n}}\n']
         full_task = full_task.append(calc_model_str4)
 
-        if egen_project.litho is True:
+        if func_params.egen_project.litho is True:
             # save out lithology voxet
-            vox_task1 = [f'''GeomodellerTask {{\nSaveLithologyVoxet {{\nnx: {egen_project.nx}\nny: {egen_project.ny}\nnz: {egen_project.nz}\nLithologyVoxetFileStub: "{voxet_path}/model_{i}_gocad_litho"\n}}\n}}\n''']
+            vox_task1 = [f'''GeomodellerTask {{\nSaveLithologyVoxet {{\nnx: {func_params.egen_project.nx}\nny: {func_params.egen_project.ny}\nnz: {func_params.egen_project.nz}\nLithologyVoxetFileStub: "{voxet_path}/model_{i}_gocad_litho"\n}}\n}}\n''']
         else:
             vox_task1 = [""]
-        if egen_project.scalar is True:
-            vox_task2 = [f'''GeomodellerTask {{\nSavePotentialGradientVoxet {{\nnx: {egen_project.nx}\nny: {egen_project.ny}\nnz: {egen_project.nz}\nJust_Gradients: false\nVoxetFileStub: "{voxet_path}/model_{i}_gocad_scalar"\n}}\n}}\n''']
+        if func_params.egen_project.scalar is True:
+            vox_task2 = [f'''GeomodellerTask {{\nSavePotentialGradientVoxet {{\nnx: {func_params.egen_project.nx}\nny: {func_params.egen_project.ny}\nnz: {func_params.egen_project.nz}\nJust_Gradients: false\nVoxetFileStub: "{voxet_path}/model_{i}_gocad_scalar"\n}}\n}}\n''']
             # vox_task2 = ['''GeomodellerTask {
             # SavePotentialGradientVoxet {
             #     nx: %d
@@ -481,8 +486,8 @@ def task_builder(path, filename):
             # }\n'''] % (nx, ny, nz, voxet_path, i)
         else:
             vox_task2 = [""]
-        if egen_project.scalar_grads is True:
-            vox_task3 = [f'''GeomodellerTask {{\nSavePotentialGradientVoxet {{\nnx: {egen_project.nx}\nny: {egen_project.ny}\nnz: {egen_project.nz}\nJust_Gradients: true\nVoxetFileStub: "{voxet_path}/model_{i}_gocad_scalar_grads"\n}}\n}}\n''']
+        if func_params.egen_project.scalar_grads is True:
+            vox_task3 = [f'''GeomodellerTask {{\nSavePotentialGradientVoxet {{\nnx: {func_params.egen_project.nx}\nny: {func_params.egen_project.ny}\nnz: {func_params.egen_project.nz}\nJust_Gradients: true\nVoxetFileStub: "{voxet_path}/model_{i}_gocad_scalar_grads"\n}}\n}}\n''']
             # vox_task3 = ['''GeomodellerTask {
             # SavePotentialGradientVoxet {
             #     nx: %d
@@ -503,7 +508,7 @@ def task_builder(path, filename):
 
         full_task = full_task.append(close_task)
 
-        np.savetxt(f'{path.parent / path.stem}_{i}{path.suffix}', np.array(full_task), fmt='%s')
+        np.savetxt(f'''{path.parent}/ensemble/{path.stem}_{i}{path.suffix}''', np.array(full_task), fmt='%s')
         #full_task.to_csv(f'{path.parent / path.stem}_{i}{path.suffix}', index=None, header=None, quoting=csv.QUOTE_NONE, quotechar="",  escapechar="\\")
         print(f'Run {i}')
     #debug

@@ -7,7 +7,7 @@ import stats_utils
 # import time
 import numpy as np
 import pathlib
-# import os
+import os
 import importlib
 
 #class_file = 'Geomodel_parameters'
@@ -16,12 +16,12 @@ def run_egen(class_file):
     params = importlib.import_module(class_file)
 
     # open egen execute .py file
-    #os.chdir(path_to_model)
+    os.chdir(params.egen_project.path_to_model)
     path = pathlib.PurePosixPath(params.egen_project.path_to_model) / params.egen_project.model_task
     path_geomodeller = pathlib.PurePosixPath(params.egen_project.path_to_geomodeller)
     f = open(path.parent / 'egen_execute.py', 'w')
-
-    # Step 0 - import modules
+#%%
+    # Step 1 - import modules
 
     modules = '''
 import sys, os
@@ -33,62 +33,72 @@ import egen_summary_stats as es
 import egen_parse_geomodeller as ep
 '''
 
-
-
     f.write(modules)
-    # Step 1 - set paths
+#%% Step 2 - set paths
     modelpath = f'''sys.path.append(os.path.abspath('{path.parent}'))\n'''
     f.write(modelpath)
     egen_path = f'''ef.egen_paths('{path_geomodeller}', '{path.parent}')\n'''
     f.write(egen_path)
 
-    # Step 2 - perturb interfaces
+#%% Step 3 Create task from m2l OR parse task from exported from Geomodeller project
 
-    #f.write(f'''os.chdir('./output')\n''')
+    # if data from m2l, build task file from data, compute task file, export litho voxet
+    if params.egen_project.source_geomodeller is False:
+        egen_l2gm = f'''ex.l2gm_ensemble('{path.parent}', './tmp/', './output/', './dtm/{params.egen_project.DTM_name}', save_faults = {params.egen_project.save_faults}, model_from=0, model_to=0, series_calc="{params.egen_project.series_list}", fault_calc = {params.egen_project.fault_list})\n'''
+        f.write(egen_l2gm)
+        egen_l2gm_compute = f'''ef.egen_create_batch('orig_model.task')\nos.system(cmd /c egen_batch.bat'''
+    # if data from geomodeller model, create task from xml, parse task
+    if params.egen_project.source_geomodeller is True:
+        egen_xml_to_task = f'''ef.egen_xml_to_task('{params.egen_project.path_to_model}','{params.egen_project.model_xml}', '{params.egen_project.model_task}')\n'''
+        egen_x2task_batch = f'''ef.egen_create_batch('xml_to_task.task')\n'''
+        exec_xml_to_task = f'''os.system('cmd /c egen_batch.bat')\n'''
+        egen_parse_task = f'''ep.parse_gm_task('{params.egen_project.path_to_model}/{params.egen_project.model_task}')\n'''
+
+        f.write(egen_xml_to_task)
+        f.write(egen_x2task_batch)
+        f.write(exec_xml_to_task)
+        f.write(egen_parse_task)
+
+
+#%% Step 4 - calculate models and export voxet/s
+
+        # calculate original model and export voxet
+        egen_calc_orig = f'''ef.egen_calc_original('{params.egen_project.model_xml}')\n'''
+        egen_voxet_orig = f'''ef.egen_orig_model_voxet('{params.egen_project.path_to_model}','{params.egen_project.model_xml}',{params.egen_project.nx}, {params.egen_project.ny}, {params.egen_project.nz}, litho={params.egen_project.litho}, scalar={params.egen_project.scalar}, scalar_grads={params.egen_project.scalar_grads})\n'''
+        f.write(egen_calc_orig)
+        f.write(egen_voxet_orig)
+
+#%% Step 5 - perturb interfaces
+
+    # f.write(f'''os.chdir('./output')\n''')
     egen_int_forms_pert = f'''pf.perturb_interface({params.egen_project.egen_runs}, {params.egen_project.error_gps}, file_type='contacts', distribution='{params.egen_project.distribution}', DEM={params.egen_project.DEM}, source_geomodeller={params.egen_project.source_geomodeller})\n'''
     f.write(egen_int_forms_pert)
-    if params.egen_project.source_geomodeller is False:
-        egen_int_fault_pert = f'''pf.perturb_interface({params.egen_project.egen_runs}, {params.egen_project.error_gps}, file_type='faults', distribution='{params.egen_project.distribution}', DEM={params.egen_project.DEM}, source_geomodeller={params.egen_project.source_geomodeller})\n'''
-        f.write(egen_int_fault_pert)
 
-
-
-
-    # Step 3 - perturb orientations
     egen_ori_forms_pert = f'''pf.perturb_orient_vMF({params.egen_project.egen_runs}, {params.egen_project.kappa}, {params.egen_project.error_gps}, file_type='contacts', loc_distribution='{params.egen_project.loc_distribution}', DEM={params.egen_project.DEM}, source_geomodeller={params.egen_project.source_geomodeller})\n'''
     f.write(egen_ori_forms_pert)
+
     if params.egen_project.source_geomodeller is False:
-        egen_ori_fault_pert = f'''pf.perturb_orient_vMF({params.egen_project.egen_runs}, {params.egen_project.kappa}, {params.egen_project.error_gps}, file_type='faults', loc_distribution='{params.egen_project.loc_distribution}', DEM={params.egen_project.DEM}, source_geomodeller={params.egen_project.source_geomodeller})\n'''
-        f.write(egen_ori_fault_pert)
+        '''we do this because the task file parser puts faults and orientations into the same file'''
+        '''if the data comes from directly from m2l, the interfaces and faults are delivered in separate files'''
+        if params.egen_project.save_faults is True:
+            egen_int_fault_pert = f'''pf.perturb_interface({params.egen_project.egen_runs}, {params.egen_project.error_gps}, file_type='faults', distribution='{params.egen_project.distribution}', DEM={params.egen_project.DEM}, source_geomodeller={params.egen_project.source_geomodeller})\n'''
+            f.write(egen_int_fault_pert)
+            egen_ori_faults_pert = f'''pf.perturb_orient_vMF({params.egen_project.egen_runs}, {params.egen_project.kappa}, {params.egen_project.error_gps}, file_type='faults', loc_distribution='{params.egen_project.loc_distribution}', DEM={params.egen_project.DEM}, source_geomodeller={params.egen_project.source_geomodeller})\n'''
+            f.write(egen_ori_faults_pert)
 
+#%% Step 6 - build the ensemble
 
-    # Step 4 - create new model task file with l2gm_ensemble
+    egen_taskbuilder = f'''ef.task_builder('{params.egen_project.path_to_model}', '{params.egen_project.model_task}', '{class_file}')\n'''
+    f.write(egen_taskbuilder)
 
-    # calculate original model and export voxet
+#%% Step 7 - compute the ensemble and export lithos
 
-
-
+    change_dir_1 = f'''os.chdir('./ensemble')\n'''
+    f.write(change_dir_1)
 
     # uses parallel processing for speed
     num_cores = mp.cpu_count()
     use_cores = int(num_cores*.8)
-
-    # single processing at the moment (boring)
-    if params.egen_project.source_geomodeller is False:
-        egen_l2gm = f'''ex.l2gm_ensemble('{path.parent}', './tmp/', './output/', './dtm/{params.egen_project.DTM_name}', save_faults = {params.egen_project.save_faults}, model_from=0, model_to={params.egen_project.egen_runs}, series_calc="{params.egen_project.series_list}", fault_calc = {params.egen_project.fault_list})\n'''
-        f.write(egen_l2gm)
-
-    if params.egen_project.source_geomodeller is True:
-        egen_xml_to_task = f'''ef.egen_xml_to_task('{params.egen_project.model_xml}')\n'''
-        exec_xml_to_task = f'''os.system('cmd /c '''
-        egen_parse_task = f'''ep.parse_gm_task('{params.egen_project.path_to_model}/{params.egen_project.model_task}')\n'''
-        egen_taskbuilder = f'''ef.task_builder('{params.egen_project.path_to_model}', '{params.egen_project.model_task}')\n'''
-        f.write(egen_xml_to_task)
-        f.write(exec_xml_to_task)
-        f.write(egen_parse_task)
-        f.write(egen_taskbuilder)
-
-    # Step 5 - compute models and export voxets
 
     pool_split = stats_utils.split(params.egen_project.egen_runs, use_cores)
     pool = np.arange(0, params.egen_project.egen_runs)
@@ -97,7 +107,7 @@ import egen_parse_geomodeller as ep
         pool_list = pool[:int(pool_split[g])]
         calc_model_names = []
         for h in pool_list:
-            calc_model_names.append("model_" + str(h) + ".task")
+            calc_model_names.append(f'''{path.stem}_{h}.task''')
 
         egen_create_batch = f'''ef.egen_create_batch_auto({calc_model_names}, {g})\n'''
         pool = pool[int(pool_split[g]):]
@@ -106,9 +116,6 @@ import egen_parse_geomodeller as ep
     for e in range(use_cores):
         egen_exec_batch = f'''os.system('cmd /c egen_batch_{e}.bat')\n'''
         f.write(egen_exec_batch)
-
-    change_dir_1 = f'''os.chdir('./ensemble')\n'''
-    f.write(change_dir_1)
 
     pool = np.arange(0, params.egen_project.egen_runs)
     for i in range(use_cores):
@@ -137,19 +144,19 @@ import egen_parse_geomodeller as ep
     #     f.write(egen_exec_vox_batch)
 
 
-    # Step 6 - import voxets and compute summary statistics
-    change_dir2 = f'''os.chdir("{path}")\n'''
-    f.write(change_dir2)
+#%% Step 8 - import voxets and compute summary statistics
+    # change_dir2 = f'''os.chdir("{path.parent}")\n'''
+    # f.write(change_dir2)
 
     if params.egen_project.litho is True:
-        egen_summary_litho_stats = f'''es.stats_gocad_voxet(directory = './voxets', type = "GOCAD_LITHO", model_label='{params.egen_project.model_label}', card = {params.egen_project.card}, ent = {params.egen_project.ent}, propor= {params.egen_project.propor}, export = {params.egen_project.export}, air = {params.egen_project.air})\n'''
+        egen_summary_litho_stats = f'''es.stats_gocad_voxet(directory = '{path.parent}/voxets', type = "gocad_litho", model_label='{params.egen_project.model_label}', card = {params.egen_project.card}, ent = {params.egen_project.ent}, propor= {params.egen_project.propor}, export = {params.egen_project.export}, air = {params.egen_project.air})\n'''
         f.write(egen_summary_litho_stats)
     if params.egen_project.scalar is True:
         # TODO enter scalar voxet output
-        egen_summary_scalar_stats = f'''es.read_gocad_voxet('./voxets', type = "TODO", card = {card}, ent = {ent}'''
+        egen_summary_scalar_stats = f'''es.stats_gocad_voxet('{path.parent}/voxets', type = "TODO", card = {card}, ent = {ent}'''
         f.write(egen_summary_scalar_stats)
     if params.egen_project.scalar_grads is True:
         # TODO enter scalar voxet grad output
-        egen_summary_scalar_stats = f'''es.read_gocad_voxet('./voxets', type = "TODO", card = {card}, ent = {ent}'''
+        egen_summary_scalar_stats = f'''es.stats_gocad_voxet('{path.parent}/voxets', type = "TODO", card = {card}, ent = {ent}'''
         f.write(egen_summary_scalar_stats)
     f.close()

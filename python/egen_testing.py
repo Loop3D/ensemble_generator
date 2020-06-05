@@ -203,6 +203,7 @@ par_file = ('../test_data3/EGen_par.py')
 #%% testing task builder
 import pathlib
 from egen_func import task_builder
+from Geomodel_parameters import egen_project
 
 #filename = 'realInit.task'
 #path = pathlib.Path('C:/Users/Mark/Cloudstor/EGen/ObjFunc_model') / filename
@@ -214,7 +215,7 @@ par_file = 'Geomodel_par.py'
 # exec(open(par_file).read())
 # series_calc = series_list
 
-task_builder(path, filename)
+task_builder(egen_project.path_to_model, egen_project.model_task, 'Geomodel_parameters')
 #
 # egen_runs = 10
 # series_calc = None

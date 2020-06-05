@@ -11,7 +11,7 @@ class egen_project:
     #           Paths           #
     #############################
 
-    path_to_geomodeller = 'C:/GeoModeller/GeoModeller4.0.7_x64_27eee3dc31ba'
+    path_to_geomodeller = 'C:/GeoModeller/GeoModeller4.0.8_x64_88b64e610d9'
     # path_to_geomodeller = pathlib.Path('C:\GeoModeller\GeoModeller4.0.8_x64_88b64e610d9')
 
     path_to_model = 'C:/Users/Mark/Cloudstor/EGen/Geomodel_demo'
