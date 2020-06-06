@@ -64,9 +64,17 @@ import egen_parse_geomodeller as ep
 
         # calculate original model and export voxet
         egen_calc_orig = f'''ef.egen_calc_original('{params.egen_project.model_xml}')\n'''
+        egen_calc_orig_batch = f'''ef.egen_create_batch('{params.egen_project.model_task}')\n'''
+        exec_calc_orig = f'''os.system('cmd /c egen_batch.bat')\n'''
         egen_voxet_orig = f'''ef.egen_orig_model_voxet('{params.egen_project.path_to_model}','{params.egen_project.model_xml}',{params.egen_project.nx}, {params.egen_project.ny}, {params.egen_project.nz}, litho={params.egen_project.litho}, scalar={params.egen_project.scalar}, scalar_grads={params.egen_project.scalar_grads})\n'''
+        egen_voxet_orig_batch = f'''ef.egen_create_batch('orig_model_voxet.task')\n'''
+        exec_voxet_orig = f'''os.system('cmd /c egen_batch.bat')\n'''
         f.write(egen_calc_orig)
+        f.write(egen_calc_orig_batch)
+        f.write(exec_calc_orig)
         f.write(egen_voxet_orig)
+        f.write(egen_voxet_orig_batch)
+        f.write(exec_voxet_orig)
 
 #%% Step 5 - perturb interfaces
 
@@ -118,25 +126,25 @@ import egen_parse_geomodeller as ep
         f.write(egen_exec_batch)
 
     pool = np.arange(0, params.egen_project.egen_runs)
-    for i in range(use_cores):
-        pool_list = pool[:int(pool_split[i])]
-        model_names = []
-        for j in pool_list:
-            model_names.append("model_" + str(j) + "_voxet.task")
-        egen_calc_vox_ens = f'''ef.calc_voxet_ensemble('{path}', {params.egen_project.nx}, {params.egen_project.ny}, {params.egen_project.nz}, model_from={pool_list[0]}, model_to={pool_list[-1]}, litho={params.egen_project.litho}, scalar={params.egen_project.scalar}, scalar_grads={params.egen_project.scalar_grads})\n'''
-        #egen_exec_vox_batch = f'''os.system('cmd /c egen_batch_{f}.bat')'''
-        pool = pool[int(pool_split[i]):]
-        f.write(egen_calc_vox_ens)
-        #print(egen_calc_vox_ens)
+    # for i in range(use_cores):
+    #     pool_list = pool[:int(pool_split[i])]
+    #     model_names = []
+    #     for j in pool_list:
+    #         model_names.append("model_" + str(j) + "_voxet.task")
+    #     egen_calc_vox_ens = f'''ef.calc_voxet_ensemble('{path}', {params.egen_project.nx}, {params.egen_project.ny}, {params.egen_project.nz}, model_from={pool_list[0]}, model_to={pool_list[-1]}, litho={params.egen_project.litho}, scalar={params.egen_project.scalar}, scalar_grads={params.egen_project.scalar_grads})\n'''
+    #     #egen_exec_vox_batch = f'''os.system('cmd /c egen_batch_{f}.bat')'''
+    #     pool = pool[int(pool_split[i]):]
+    #     f.write(egen_calc_vox_ens)
+    #     #print(egen_calc_vox_ens)
 
     pool = np.arange(0, params.egen_project.egen_runs)
-    for k in range(use_cores):
-        pool_list = pool[:int(pool_split[k])]
-        calc_vox_name = f'''model_{pool_list[0]}_{pool_list[-1]}_voxet.task'''
-        egen_create_vox_batch = f'''ef.egen_create_batch_auto('{calc_vox_name}', run = 'voxrun{k}')\n'''
-        pool = pool[int(pool_split[g]):]
-        #print(egen_create_vox_batch)
-        f.write(egen_create_vox_batch)
+    # for k in range(use_cores):
+    #     pool_list = pool[:int(pool_split[k])]
+    #     calc_vox_name = f'''model_{pool_list[0]}_{pool_list[-1]}_voxet.task'''
+    #     egen_create_vox_batch = f'''ef.egen_create_batch_auto('{calc_vox_name}', run = 'voxrun{k}')\n'''
+    #     pool = pool[int(pool_split[g]):]
+    #     #print(egen_create_vox_batch)
+    #     f.write(egen_create_vox_batch)
 
     # TODO this bit below and weird batch file creation
     # for f in range(use_cores):

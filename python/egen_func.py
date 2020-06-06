@@ -109,9 +109,11 @@ def egen_orig_model_voxet(path_to_model, model_xml, nx, ny, nz, litho=True, scal
     """task for exporting voxets from the original model - litho, scalar, gradients etc"""
     """assumes you want the same voxel parameters for all voxets"""
     """if different cell sizes are needed, repeat this function with the appropriate params and voxet"""
+    if not os.path.exists(f'''{path_to_model}/voxets'''):
+        os.makedirs(f'''{path_to_model}/voxets''')
     open_task = f'''GeomodellerTask {{
     OpenProjectNoGUI {{
-        filename: {path_to_model}/{model_xml}"
+        filename: "{path_to_model}/{model_xml}"
     }}
 }}\n'''
     if litho is True:
@@ -154,7 +156,7 @@ def egen_orig_model_voxet(path_to_model, model_xml, nx, ny, nz, litho=True, scal
     CloseProjectNoGUI {
     }
 }'''
-    orig_model_voxet = open(f'{path_output}/orig_model_voxet.task', "w")
+    orig_model_voxet = open(f'{path_to_model}/orig_model_voxet.task', "w")
     orig_model_voxet.write(open_task + task1 + task2 + task3 + close_task)
     orig_model_voxet.close()
     return
