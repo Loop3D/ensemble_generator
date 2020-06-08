@@ -194,7 +194,8 @@ np.mean(data - test_data)
 
 
 import run_egen_func as re
-class_file = 'realInit_parameters.py'
+#class_file = 'realInit_parameters'  # don't add the .py file extension dummy
+class_file = 'Geomodel_parameters'
 re.run_egen(class_file)
 
 #debug
@@ -211,7 +212,7 @@ from Geomodel_parameters import egen_project
 filename = 'Geomodel_demo.task'
 path = 'C:/Users/Mark/Cloudstor/EGen/Geomodel_demo/' # / filename
 #par_file = path.parent / 'Geomodel_par.py'
-par_file = 'Geomodel_par.py'
+class_file = 'Geomodel_parameters'
 # exec(open(par_file).read())
 # series_calc = series_list
 

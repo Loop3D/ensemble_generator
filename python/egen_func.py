@@ -439,12 +439,13 @@ def task_builder(path, filename, class_file):
         #    f.write(calc_model_str_series_calc)
             full_task = full_task.append(calc_model_str_series_calc)
 
-        calc_model_str_section_list = [f'''}}\nSectionList {{\nnode: "all" }}''']
+        ## I don't think we need the 'section' to calculate as all data is 3D
+        #calc_model_str_section_list = [f'''}}\nSectionList {{\nnode: "all" }}''']
         #f.write(calc_model_str_section_list)
-        full_task = full_task.append(calc_model_str_section_list)
+        #full_task = full_task.append(calc_model_str_section_list)
 
         if func_params.egen_project.fault_list is not None:
-            calc_model_str_fault_calc1 = [f'''\nFaultList {{''']
+            calc_model_str_fault_calc1 = [f'''\n}}\nFaultList {{''']
         #    f.write(calc_model_str_fault_calc1)
             full_task = full_task.append(calc_model_str_fault_calc1)
 
@@ -521,4 +522,146 @@ def task_builder(path, filename, class_file):
     # full_task.to_csv(f'{path.parent / path.stem}_{i}{path.suffix}', index=None, header=None)
     # # new_contents =
 
+def task_builder_windows(path, filename, class_file):
+    '''This version of task builder uses the 'ReadAndImport3dData' call from the Geomodeller Protobuf API. At this point,
+    this function only works on Windows using version: GeoModeller-4.0.8-2020-06-04-eb3e596cac2_WIN_x64.msi
+    This function creates a task file imports new 3D data to the project, computes a scalar field, and exports
+    a 3D voxet of given properties - lithology, scalar field, or scalar field gradients'''
 
+    func_params = importlib.import_module(class_file)
+    path = pathlib.PurePosixPath(path) / filename
+    if not os.path.exists("./ensemble"):
+        os.makedirs("./ensemble")
+    # par_file = path.parent / par_file
+    # exec(open(path.parent / par_file).read())
+    # print(egen_runs)
+    contents = pd.read_csv(path, sep='\t', header=None, quotechar='\0')  # + '/' + filename, sep='\t', header=None)
+    fault_info = pd.read_csv(path.parent / "output/fault_info.csv")  # contents = task_file.readlines()
+    strat_info = pd.read_csv(path.parent / "output/strat.csv")
+    # contents = (contents)
+    # get first file part - everything up to where the data points are added
+    end_line = contents[0] == '  Add3DInterfacesToFormation {'
+    idx = [a for a, x in enumerate(end_line) if x]  # make list of row indices where the string above is found
+    task_pt1 = contents[0:(idx[0] - 1)]
+    voxet_path = path.parent / "voxets/"
+    if not os.path.exists("./voxets"):
+        os.makedirs("./voxets")
+
+    for i in range(func_params.egen_project.egen_runs):
+        add_new_data = [f'''GeomodellerTask {{\n\tReadAndImport3dData {{\n\t\tcontact_csv_file: "../output/contacts_{i}.csv"\n\t\tfoliation_csv_file: "../output/contacts_orient_{i}.csv"\n\t\toperation: Import_default\n\t}}\n}}''']
+
+        full_task = task_pt1.append(add_new_data)
+        ####
+        # Calculate model lines
+
+        #
+
+        # assign default parameters
+        if func_params.egen_project.series_list is None:
+            # series_c = 'all'
+            series_list = strat_info['series'].unique()
+
+        if func_params.egen_project.series_list == 'all':
+            series_list = strat_info['series'].unique()
+
+        if func_params.egen_project.krig_range is None:
+            krig_range = 10000.0
+        if func_params.egen_project.interface is None:
+            interface = 0.000001
+        if func_params.egen_project.orientation is None:
+            orientation = 0.01
+        if func_params.egen_project.drift is None:
+            drift = 1
+
+        calc_model_str1 = [f'''GeomodellerTask {{\nComputeModel {{\nSeriesList {{''']
+        # f.write(calc_model_str1)
+        full_task = full_task.append(calc_model_str1)
+
+        for sc in range(len(series_list)):
+            calc_model_str_series_calc = [f'''node: "{series_list[sc]}"''']
+
+            #    f.write(calc_model_str_series_calc)
+            full_task = full_task.append(calc_model_str_series_calc)
+
+        ''' Don't need to include the SectionList in the compute call. It's possible this also creates issues as there
+        is no data on the Section to calculate. Previous testing produced a 'Failed Cholesky inversion' error, plus a 
+        homogenous null model.'''
+        #calc_model_str_section_list = [f'''}}\nSectionList {{\nnode: "all" }}''']
+        # f.write(calc_model_str_section_list)
+        #full_task = full_task.append(calc_model_str_section_list)
+
+        if func_params.egen_project.fault_list is not None:
+            calc_model_str_fault_calc1 = [f'''\n}}\nFaultList {{''']
+            #    f.write(calc_model_str_fault_calc1)
+            full_task = full_task.append(calc_model_str_fault_calc1)
+
+            # print(calc_model_str_fault_calc1)
+            for fc in range(len(fault_info)):
+                calc_model_str_fault_calc2 = [f'''node: "{fault_info.iat[fc, 0]}"''']
+                full_task = full_task.append(calc_model_str_fault_calc2)
+
+            calc_model_str_fault_calc3 = ["}"]
+            #   f.write(calc_model_str_fault_calc3)
+            full_task = full_task.append(calc_model_str_fault_calc3)
+
+        for ss in range(len(series_list)):
+            calc_model_str2 = [
+                f'''\nSeriesInterpolationParameters {{\nseries: "{series_list[ss]}"\nRange: {krig_range}\nContacts_Nugget_Effect: {interface}\nGradients_Nugget_Effect: {orientation}\nFaultDriftEquationDegree: {drift} }}''']
+            #   f.write(calc_model_str2)
+            full_task = full_task.append(calc_model_str2)
+
+        calc_model_str3 = [f'''\n}}\n}}\n''']
+        # f.write(calc_model_str3)
+        full_task = full_task.append(calc_model_str3)
+
+        ####
+        calc_model_str4 = [
+            f'GeomodellerTask {{\n    SaveProjectAs {{\n        filename: "{path.parent}/ensemble/model_{i}.xml"\n    }}\n}}\n']
+        full_task = full_task.append(calc_model_str4)
+
+        if func_params.egen_project.litho is True:
+            # save out lithology voxet
+            vox_task1 = [
+                f'''GeomodellerTask {{\nSaveLithologyVoxet {{\nnx: {func_params.egen_project.nx}\nny: {func_params.egen_project.ny}\nnz: {func_params.egen_project.nz}\nLithologyVoxetFileStub: "{voxet_path}/model_{i}_gocad_litho"\n}}\n}}\n''']
+        else:
+            vox_task1 = [""]
+        if func_params.egen_project.scalar is True:
+            vox_task2 = [
+                f'''GeomodellerTask {{\nSavePotentialGradientVoxet {{\nnx: {func_params.egen_project.nx}\nny: {func_params.egen_project.ny}\nnz: {func_params.egen_project.nz}\nJust_Gradients: false\nVoxetFileStub: "{voxet_path}/model_{i}_gocad_scalar"\n}}\n}}\n''']
+            # vox_task2 = ['''GeomodellerTask {
+            # SavePotentialGradientVoxet {
+            #     nx: %d
+            #     ny: %d
+            #     nz: %d
+            #
+            #     VoxetFileStub: "%s/model_%i_gocad_scalar"
+            #     }
+            # }\n'''] % (nx, ny, nz, voxet_path, i)
+        else:
+            vox_task2 = [""]
+        if func_params.egen_project.scalar_grads is True:
+            vox_task3 = [
+                f'''GeomodellerTask {{\nSavePotentialGradientVoxet {{\nnx: {func_params.egen_project.nx}\nny: {func_params.egen_project.ny}\nnz: {func_params.egen_project.nz}\nJust_Gradients: true\nVoxetFileStub: "{voxet_path}/model_{i}_gocad_scalar_grads"\n}}\n}}\n''']
+            # vox_task3 = ['''GeomodellerTask {
+            # SavePotentialGradientVoxet {
+            #     nx: %d
+            #     ny: %d
+            #     nz: %d
+            #     Just_Gradients: true
+            #     VoxetFileStub: "%s/model_%i_gocad_scalar_grads"
+            #     }
+            # }\n'''] % (nx, ny, nz, voxet_path, i)
+        else:
+            vox_task3 = [""]
+
+        full_task = full_task.append(vox_task1)
+        full_task = full_task.append(vox_task2)
+        full_task = full_task.append(vox_task3)
+
+        close_task = ['''GeomodellerTask {\nCloseProjectNoGUI {\n}\n}''']
+
+        full_task = full_task.append(close_task)
+
+        np.savetxt(f'''{path.parent}/ensemble/{path.stem}_{i}{path.suffix}''', np.array(full_task), fmt='%s')
+        # full_task.to_csv(f'{path.parent / path.stem}_{i}{path.suffix}', index=None, header=None, quoting=csv.QUOTE_NONE, quotechar="",  escapechar="\\")
+        print(f'Run {i}')

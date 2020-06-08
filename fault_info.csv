@@ -1,3 +1,0 @@
-fault_name,red,green,blue,thickness,horizontal,vertical,influedistance,type
-EW_Fault, 255, 130, 249, 0,0,0,0,infinite
-NNW_Fault, 255, 255, 255, 0,0,0,0,infinite

@@ -7,7 +7,7 @@ import stats_utils
 #import time
 import numpy as np
 import pathlib
-import os
+import os, sys
 import importlib
 
 #class_file = 'Geomodel_parameters'
@@ -97,7 +97,10 @@ import egen_parse_geomodeller as ep
 #%% Step 6 - build the ensemble
 
     #egen_task_timestart = f'''t_start = time.time()\n'''
-    egen_taskbuilder = f'''ef.task_builder('{params.egen_project.path_to_model}', '{params.egen_project.model_task}', '{class_file}')\n'''
+    if sys.platform == "win32":
+        egen_taskbuilder = f'''ef.task_builder_windows('{params.egen_project.path_to_model}', '{params.egen_project.model_task}', '{class_file}')\n'''
+    else:
+        egen_taskbuilder = f'''ef.task_builder('{params.egen_project.path_to_model}', '{params.egen_project.model_task}', '{class_file}')\n'''
     #egen_task_timeend = f'''t_end = time.time()\nprint(str(t_end-t_start))\n'''
     #egen_task_time_taskbuild = f'''taskb_time = t_end-t_start\ntext_file = open("taskbuilder_time.txt", "w")\ntext_file.write(str(taskb_time))\ntext_file.close()\n'''
     #f.write(egen_task_timestart)
