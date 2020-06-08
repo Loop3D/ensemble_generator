@@ -194,7 +194,7 @@ np.mean(data - test_data)
 
 
 import run_egen_func as re
-class_file = 'Geomodel_parameters'
+class_file = 'realInit_parameters.py'
 re.run_egen(class_file)
 
 #debug

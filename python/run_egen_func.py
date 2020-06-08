@@ -4,7 +4,7 @@
 # import egen_summary_stats as es
 import multiprocessing as mp
 import stats_utils
-# import time
+#import time
 import numpy as np
 import pathlib
 import os
@@ -24,7 +24,7 @@ def run_egen(class_file):
     # Step 1 - import modules
 
     modules = '''
-import sys, os
+import sys, os, subprocess, time
 sys.path.append(os.path.abspath('C:/Users/Mark/Cloudstor/EGen/ensemble_generator/python'))
 import egen_func as ef
 import perturber_func as pf
@@ -96,9 +96,14 @@ import egen_parse_geomodeller as ep
 
 #%% Step 6 - build the ensemble
 
+    #egen_task_timestart = f'''t_start = time.time()\n'''
     egen_taskbuilder = f'''ef.task_builder('{params.egen_project.path_to_model}', '{params.egen_project.model_task}', '{class_file}')\n'''
+    #egen_task_timeend = f'''t_end = time.time()\nprint(str(t_end-t_start))\n'''
+    #egen_task_time_taskbuild = f'''taskb_time = t_end-t_start\ntext_file = open("taskbuilder_time.txt", "w")\ntext_file.write(str(taskb_time))\ntext_file.close()\n'''
+    #f.write(egen_task_timestart)
     f.write(egen_taskbuilder)
-
+    #f.write(egen_task_timeend)
+    #f.write(egen_task_time_taskbuild)
 #%% Step 7 - compute the ensemble and export lithos
 
     change_dir_1 = f'''os.chdir('./ensemble')\n'''
@@ -106,7 +111,7 @@ import egen_parse_geomodeller as ep
 
     # uses parallel processing for speed
     num_cores = mp.cpu_count()
-    use_cores = int(num_cores*.8)
+    use_cores = int(num_cores*.5)
 
     pool_split = stats_utils.split(params.egen_project.egen_runs, use_cores)
     pool = np.arange(0, params.egen_project.egen_runs)
@@ -122,7 +127,8 @@ import egen_parse_geomodeller as ep
         f.write(egen_create_batch)
 
     for e in range(use_cores):
-        egen_exec_batch = f'''os.system('cmd /c egen_batch_{e}.bat')\n'''
+        #egen_exec_batch = f'''os.system('cmd /c egen_batch_{e}.bat')\n'''
+        egen_exec_batch = f'''subprocess.call('egen_batch_{e}.bat')\n'''
         f.write(egen_exec_batch)
 
     pool = np.arange(0, params.egen_project.egen_runs)
