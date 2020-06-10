@@ -3,10 +3,10 @@ class egen_project:
     #      Names and labels     #
     #############################
 
-    model_label = 'realInit'
+    model_label = 'YerridaBasin'
     source_geomodeller = True  # True or False
-    model_task = 'realInit.task'
-    model_xml = 'realInit.xml'
+    model_task = 'YerridaBasin_masked_10Oct2017.task'
+    model_xml = 'YerridaBasin_masked_10Oct2017.xml'
     #############################
     #           Paths           #
     #############################
@@ -14,7 +14,7 @@ class egen_project:
     path_to_geomodeller = 'C:/GeoModeller/GeoModeller4.0.8_x64_eb3e596cac2'
     # path_to_geomodeller = pathlib.Path('C:\GeoModeller\GeoModeller4.0.8_x64_88b64e610d9')
 
-    path_to_model = 'C:/Users/Mark/Cloudstor/EGen/ObjFunc_model'
+    path_to_model = 'C:/Users/Mark/Cloudstor/EGen/YerridaBasin_masked_10Oct2017'
     # path_to_model_pl = pathlib.Path('C:/Users/Mark/Cloudstor/EGen/test_data3')
 
     #############################
@@ -27,7 +27,7 @@ class egen_project:
     #       Ensemble par        #
     #############################
 
-    egen_runs = 10
+    egen_runs = 20
     save_faults = True  # True/False: do we want faults included?
 
     #############################
@@ -39,8 +39,8 @@ class egen_project:
     scalar_grads = False  # True or comment out
 
     # Voxet parameters
-    nx = 50
-    ny = 50
+    nx = 75
+    ny = 75
     nz = 50
 
     #############################
@@ -75,4 +75,4 @@ class egen_project:
     ent = True  # True or False - export a voxet representing model entropy
     propor = True  # True or False - export a voxet representing the proportions of modelled lithologies
     export = True  # Export voxet - Can be 'False' if the arrays produced by the summary stats function are being passed directly to a downstream process
-    air = True  # is there an 'air' layer in the model? Will be yes if there is a DTM and/or the surface topo is not at the top of the model volume. Important for geodiversity and proportion calculations.
+    air = False  # is there an 'air' layer in the model? Will be yes if there is a DTM and/or the surface topo is not at the top of the model volume. Important for geodiversity and proportion calculations.

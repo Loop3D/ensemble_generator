@@ -458,6 +458,11 @@ def task_builder(path, filename, class_file):
         #   f.write(calc_model_str_fault_calc3)
             full_task = full_task.append(calc_model_str_fault_calc3)
 
+        # set calc_uncertainty flag to false. When = true the calculation is much slower. We can't get the error estimate out at this point anyway.
+        # can make this an if statement and add a parameter to the class
+        calc_uncert = [f'''\ncalc_uncertainty: false''']
+        full_task = full_task.append(calc_uncert)
+
         for ss in range(len(series_list)):
             calc_model_str2 = [f'''\nSeriesInterpolationParameters {{\nseries: "{series_list[ss]}"\nRange: {krig_range}\nContacts_Nugget_Effect: {interface}\nGradients_Nugget_Effect: {orientation}\nFaultDriftEquationDegree: {drift} }}''']
         #   f.write(calc_model_str2)
@@ -604,6 +609,11 @@ def task_builder_windows(path, filename, class_file):
             #   f.write(calc_model_str_fault_calc3)
             full_task = full_task.append(calc_model_str_fault_calc3)
 
+        # set calc_uncertainty flag to false. When = true the calculation is much slower. We can't get the error estimate out at this point anyway.
+        # can make this an if statement and add a parameter to the class
+        calc_uncert = [f'''\ncalc_uncertainty: false''']
+        full_task = full_task.append(calc_uncert)
+
         for ss in range(len(series_list)):
             calc_model_str2 = [
                 f'''\nSeriesInterpolationParameters {{\nseries: "{series_list[ss]}"\nRange: {krig_range}\nContacts_Nugget_Effect: {interface}\nGradients_Nugget_Effect: {orientation}\nFaultDriftEquationDegree: {drift} }}''']
@@ -613,6 +623,8 @@ def task_builder_windows(path, filename, class_file):
         calc_model_str3 = [f'''\n}}\n}}\n''']
         # f.write(calc_model_str3)
         full_task = full_task.append(calc_model_str3)
+
+        calc_model_str_uncert = [f'''calc_uncertainty: false''']
 
         ####
         calc_model_str4 = [

@@ -30,10 +30,11 @@ l2gm_ensemble - *this will be the 'original' model*
 2. perturb_orient_vMF
 
 **6. build the ensemble: create the task files**
-task_builder
+task_builder - *this is the much slower version - used with linux*
+task_builder_windows - *this is faster as it can use the ReadAndImport3dData function from Geomodeller protobuf. This function only operates correctly within tasks for the dev build. The bug needs to be fixed for the linux version to massively speed things up*
 
 **7. compute the ensemble: compute models and export litho/scalar voxets**
-1. egen_create_batch_auto . *multiprocessing*
+1. egen_create_batch_auto . *multiprocessing to be implemented*
 2. execute the batch files
 
 **8. run summary stats**
@@ -67,10 +68,11 @@ egen_paths
 2. perturb_orient_vMF
 
 **6. build the ensemble: create the task files**
-task_builder
+task_builder - *this is the much slower version - used with linux*
+task_builder_windows - *this is faster as it can use the ReadAndImport3dData function from Geomodeller protobuf. This function only operates correctly within tasks for the dev build. The bug needs to be fixed for the linux version to massively speed things up*
 
 **7. compute the ensemble: compute models and export litho/scalar voxets**
-1. egen_create_batch_auto . *multiprocessing*
+1. egen_create_batch_auto . *multiprocessing to be implemented*
 2. execute the batch files
 
 **8. run summary stats**
