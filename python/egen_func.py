@@ -414,6 +414,8 @@ def task_builder(path, filename, class_file):
         if func_params.egen_project.series_list is None:
             #series_c = 'all'
             series_list = strat_info['series'].unique()
+        else:
+            series_list = func_params.egen_project.series_list
 
         if func_params.egen_project.series_list == 'all':
             series_list = strat_info['series'].unique()
@@ -440,12 +442,12 @@ def task_builder(path, filename, class_file):
             full_task = full_task.append(calc_model_str_series_calc)
 
         ## I don't think we need the 'section' to calculate as all data is 3D
-        #calc_model_str_section_list = [f'''}}\nSectionList {{\nnode: "all" }}''']
+        calc_model_str_section_list = [f'''}}\nSectionList {{\nnode: "all" }}''']
         #f.write(calc_model_str_section_list)
-        #full_task = full_task.append(calc_model_str_section_list)
+        full_task = full_task.append(calc_model_str_section_list)
 
         if func_params.egen_project.fault_list is not None:
-            calc_model_str_fault_calc1 = [f'''\n}}\nFaultList {{''']
+            calc_model_str_fault_calc1 = [f'''\nFaultList {{''']
         #    f.write(calc_model_str_fault_calc1)
             full_task = full_task.append(calc_model_str_fault_calc1)
 
@@ -565,6 +567,8 @@ def task_builder_windows(path, filename, class_file):
         if func_params.egen_project.series_list is None:
             # series_c = 'all'
             series_list = strat_info['series'].unique()
+        else:
+            series_list = func_params.egen_project.series_list
 
         if func_params.egen_project.series_list == 'all':
             series_list = strat_info['series'].unique()
@@ -591,12 +595,12 @@ def task_builder_windows(path, filename, class_file):
         ''' Don't need to include the SectionList in the compute call. It's possible this also creates issues as there
         is no data on the Section to calculate. Previous testing produced a 'Failed Cholesky inversion' error, plus a 
         homogenous null model.'''
-        #calc_model_str_section_list = [f'''}}\nSectionList {{\nnode: "all" }}''']
+        calc_model_str_section_list = [f'''}}\nSectionList {{\nnode: "all" }}''']
         # f.write(calc_model_str_section_list)
-        #full_task = full_task.append(calc_model_str_section_list)
+        full_task = full_task.append(calc_model_str_section_list)
 
         if func_params.egen_project.fault_list is not None:
-            calc_model_str_fault_calc1 = [f'''\n}}\nFaultList {{''']
+            calc_model_str_fault_calc1 = [f'''\nFaultList {{''']
             #    f.write(calc_model_str_fault_calc1)
             full_task = full_task.append(calc_model_str_fault_calc1)
 

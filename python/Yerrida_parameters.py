@@ -60,7 +60,7 @@ class egen_project:
     #       Compute params      #
     #############################
 
-    series_list = 'all'  # list of series to calculate
+    series_list = (['ArcheanGranite', "ArcheanGreenstone_Series", "PostArcheanUncon_Series", "Juderina", "Mafic_Intrusions_inWindplain_Series", "Windplain_Uncon", "JohnsonCairn", "MaficIntrusions_inJohnsonCairn_Series", "PostWindplainUncon_Series", "LowerMooloogoolSubGroup", "MaficIntrusive_MooloogoolIntrusive_Series", "Mooloogool_Uncon_Series", "UpperMooloogool_SubSeries", "ToolooSubGroup", "Masking_intrusion"]) # list of series to calculate
     fault_list = 'all'  # (['Fault_12644', 'Fault_2235', 'Fault_11442', 'Fault_3496', 'Fault_5298', 'Fault_12647']) # list of faults to calculate or 'all'
     krig_range = None  # kriging range - set to None for default values
     interface = None  # nugget effect on interface; larger values = smoother model (less adherence to the data) default = 0.000001. Set to None for default value
