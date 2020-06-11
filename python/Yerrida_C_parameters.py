@@ -14,14 +14,14 @@ class egen_project:
     path_to_geomodeller = 'C:/GeoModeller/GeoModeller4.0.8_x64_eb3e596cac2'
     # path_to_geomodeller = pathlib.Path('C:\GeoModeller\GeoModeller4.0.8_x64_88b64e610d9')
 
-    path_to_model = 'C:/Users/Mark/Cloudstor/EGen/YerridaBasin_masked_10Oct2017'
+    path_to_model = 'C:/CURE/YerridaBasin_masked_10Oct2017'
     # path_to_model_pl = pathlib.Path('C:/Users/Mark/Cloudstor/EGen/test_data3')
 
     #############################
     #           Files           #
     #############################
 
-    DTM_name = 'Yerrida_SRTM_90m.ers'  # , just the filename, not the path, includes file extension
+    DTM_name = 'dtm_rp.tif'  # , just the filename, not the path, includes file extension
 
     #############################
     #       Ensemble par        #

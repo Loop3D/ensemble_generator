@@ -194,6 +194,7 @@ np.mean(data - test_data)
 
 
 import run_egen_func as re
+#class_file = 'Yerrida_C_parameters'  # don't add the .py file extension dummy
 class_file = 'Yerrida_parameters'  # don't add the .py file extension dummy
 #class_file = 'realInit_parameters'  # don't add the .py file extension dummy
 #class_file = 'Geomodel_parameters'
