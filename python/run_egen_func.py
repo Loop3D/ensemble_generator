@@ -109,8 +109,8 @@ import egen_parse_geomodeller as ep
     #f.write(egen_task_time_taskbuild)
 #%% Step 7 - compute the ensemble and export lithos
 
-    change_dir_1 = f'''os.chdir('./ensemble')\n'''
-    f.write(change_dir_1)
+    #change_dir_1 = f'''os.chdir('./ensemble')\n'''
+    #f.write(change_dir_1)
 
     # uses parallel processing for speed
     num_cores = mp.cpu_count()

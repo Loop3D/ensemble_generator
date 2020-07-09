@@ -180,7 +180,7 @@ def egen_create_batch_auto(tasks, run): # need to fix how the tasks args can be 
 
     # create a switch for linux - .sh and path setting will be different
     batch1 = f"SET PATH=%PATH%;{path_geomodeller1}\n"
-    egen_batch = open(f'{path_model}/ensemble/egen_batch_{run}.bat', "w")
+    egen_batch = open(f'{path_model}/egen_batch_{run}.bat', "w")
     egen_batch.write(batch1)
     for m in range(0, len(tasks)):
         batch2 = "geomodellerbatch " + str(tasks[m]) + "\n"
@@ -196,7 +196,7 @@ def egen_create_voxet_ensemble_batch(samples): # need to fix how the tasks args 
     batch = f"SET PATH=%PATH%;{path_geomodeller1}\n"
     for i in range(samples):
         batch = batch + "geomodellerbatch model_" + str(i) + "_voxet.task\n"
-    egen_batch = open(f'{path_model}/ensemble/egen_voxet_ensemble_batch.bat', "w")
+    egen_batch = open(f'{path_model}/egen_voxet_ensemble_batch.bat', "w")
     egen_batch.write(batch)
     egen_batch.close()
     return
@@ -255,7 +255,8 @@ def calc_voxet_ensemble(path_model, nx, ny, nz, model_from = None, model_to = No
     litho, scalar, scalar_grads = None. Set to 'True' to boolean to export litho, scalar
      scalar gradient voxets (gocad binary format).'''
     #task_path = path_model
-    ensemble_path = path_model + "/ensemble"
+    #ensemble_path = path_model + "/ensemble"
+    ensemble_path = path_model
     os.chdir(path_model)
     if not os.path.exists("./voxets"):
         os.makedirs("./voxets")
@@ -263,7 +264,7 @@ def calc_voxet_ensemble(path_model, nx, ny, nz, model_from = None, model_to = No
     pattern = "*.xml"
     xml_names = glob.glob(pattern)
     voxet_path = "../voxets"
-    os.chdir(ensemble_path)
+    #os.chdir(ensemble_path)
 
     # if 'model_from' != locals():
     #     model_from = 0
@@ -335,8 +336,8 @@ def task_builder(path, filename, class_file):
     '''speed increase with numpy... maybe? instead of pandas'''
     func_params = importlib.import_module(class_file)
     path = pathlib.PurePosixPath(path) / filename
-    if not os.path.exists("./ensemble"):
-        os.makedirs("./ensemble")
+    #if not os.path.exists("./ensemble"):
+    #    os.makedirs("./ensemble")
     #par_file = path.parent / par_file
     #exec(open(path.parent / par_file).read())
     #print(egen_runs)
@@ -475,7 +476,7 @@ def task_builder(path, filename, class_file):
         full_task = full_task.append(calc_model_str3)
 
         ####
-        calc_model_str4 = [f'GeomodellerTask {{\n    SaveProjectAs {{\n        filename: "{path.parent}/ensemble/model_{i}.xml"\n    }}\n}}\n']
+        calc_model_str4 = [f'GeomodellerTask {{\n    SaveProjectAs {{\n        filename: "{path.parent}/model_{i}.xml"\n    }}\n}}\n']
         full_task = full_task.append(calc_model_str4)
 
         if func_params.egen_project.litho is True:
@@ -518,7 +519,7 @@ def task_builder(path, filename, class_file):
 
         full_task = full_task.append(close_task)
 
-        np.savetxt(f'''{path.parent}/ensemble/{path.stem}_{i}{path.suffix}''', np.array(full_task), fmt='%s')
+        np.savetxt(f'''{path.parent}/{path.stem}_{i}{path.suffix}''', np.array(full_task), fmt='%s')
         #full_task.to_csv(f'{path.parent / path.stem}_{i}{path.suffix}', index=None, header=None, quoting=csv.QUOTE_NONE, quotechar="",  escapechar="\\")
         print(f'Run {i}')
     #debug
@@ -537,8 +538,8 @@ def task_builder_windows(path, filename, class_file):
 
     func_params = importlib.import_module(class_file)
     path = pathlib.PurePosixPath(path) / filename
-    if not os.path.exists("./ensemble"):
-        os.makedirs("./ensemble")
+    #if not os.path.exists("./ensemble"):
+    #    os.makedirs("./ensemble")
     # par_file = path.parent / par_file
     # exec(open(path.parent / par_file).read())
     # print(egen_runs)
@@ -555,7 +556,7 @@ def task_builder_windows(path, filename, class_file):
         os.makedirs("./voxets")
 
     for i in range(func_params.egen_project.egen_runs):
-        add_new_data = [f'''GeomodellerTask {{\n\tReadAndImport3dData {{\n\t\tcontact_csv_file: "../output/contacts_{i}.csv"\n\t\tfoliation_csv_file: "../output/contacts_orient_{i}.csv"\n\t\toperation: Import_default\n\t}}\n}}''']
+        add_new_data = [f'''GeomodellerTask {{\n\tReadAndImport3dData {{\n\t\tcontact_csv_file: "output/contacts_{i}.csv"\n\t\tfoliation_csv_file: "output/contacts_orient_{i}.csv"\n\t\toperation: Import_default\n\t}}\n}}''']
 
         full_task = task_pt1.append(add_new_data)
         ####
@@ -632,7 +633,7 @@ def task_builder_windows(path, filename, class_file):
 
         ####
         calc_model_str4 = [
-            f'GeomodellerTask {{\n    SaveProjectAs {{\n        filename: "{path.parent}/ensemble/model_{i}.xml"\n    }}\n}}\n']
+            f'GeomodellerTask {{\n    SaveProjectAs {{\n        filename: "{path.parent}/model_{i}.xml"\n    }}\n}}\n']
         full_task = full_task.append(calc_model_str4)
 
         if func_params.egen_project.litho is True:
@@ -678,6 +679,6 @@ def task_builder_windows(path, filename, class_file):
 
         full_task = full_task.append(close_task)
 
-        np.savetxt(f'''{path.parent}/ensemble/{path.stem}_{i}{path.suffix}''', np.array(full_task), fmt='%s')
+        np.savetxt(f'''{path.parent}/{path.stem}_{i}{path.suffix}''', np.array(full_task), fmt='%s')
         # full_task.to_csv(f'{path.parent / path.stem}_{i}{path.suffix}', index=None, header=None, quoting=csv.QUOTE_NONE, quotechar="",  escapechar="\\")
         print(f'Run {i}')

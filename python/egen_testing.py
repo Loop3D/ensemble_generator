@@ -201,7 +201,7 @@ class_file = 'Yerrida_parameters'  # don't add the .py file extension dummy
 re.run_egen(class_file)
 
 #debug
-par_file = ('../test_data3/EGen_par.py')
+#par_file = ('../test_data3/EGen_par.py')
 
 #%% testing task builder
 import pathlib
@@ -247,3 +247,11 @@ model_task = 'C:/Users/Mark/Cloudstor/EGen/Geomodel_demo/Geomodel_demo.task'
 #%%
 import egen_func as ef
 ef.egen_xml_to_task(path_to_model, model_xml=model_xml, model_task=model_task)
+
+#%%
+import os
+
+os.chdir('../testInterpParamPerturb/voxets')
+import egen_summary_stats as es
+es.stats_gocad_voxet('.', type = 'gocad_litho', model_label='interp_param', card=True, ent=True, export=True, air=False)
+

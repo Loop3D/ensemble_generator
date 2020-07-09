@@ -11,7 +11,7 @@ class egen_project:
     #           Paths           #
     #############################
 
-    path_to_geomodeller = 'C:/GeoModeller/GeoModeller4.0.8_x64_eb3e596cac2'
+    path_to_geomodeller = 'C:/GeoModeller/GeoModeller4.0.8_x64_d9d8f5c58a1'  # version July2020
     # path_to_geomodeller = pathlib.Path('C:\GeoModeller\GeoModeller4.0.8_x64_88b64e610d9')
 
     path_to_model = 'C:/Users/Mark/Cloudstor/EGen/YerridaBasin_masked_10Oct2017'
@@ -27,7 +27,7 @@ class egen_project:
     #       Ensemble par        #
     #############################
 
-    egen_runs = 4
+    egen_runs = 10
     save_faults = True  # True/False: do we want faults included?
 
     #############################
@@ -39,9 +39,9 @@ class egen_project:
     scalar_grads = False  # True or comment out
 
     # Voxet parameters
-    nx = 75
-    ny = 75
-    nz = 50
+    nx = 113
+    ny = 100
+    nz = 40
 
     #############################
     #      Perturbing params    #
@@ -52,7 +52,7 @@ class egen_project:
     distribution = 'uniform'
     DEM = False  # True or none
     # orientations
-    kappa = 50
+    kappa = 150
     error_gps = 10
     loc_distribution = 'uniform'
 
