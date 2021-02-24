@@ -3,8 +3,8 @@ import numpy as np
 import pandas as pd
 #from math import log, e
 import sys, os, glob
-from stats_utils import entropy_custom
-from stats_utils import litho_probabilites
+from ensemble_generator.stats_utils import entropy_custom
+from ensemble_generator.stats_utils import litho_probabilites
 
 
 #%%
@@ -16,8 +16,9 @@ def stats_gocad_voxet(directory, type, model_label='Anon', card=False, ent=False
     # while these voxets are technically "Gocad" format, true Gocad format has @@ prefixes to properties
     # So this reader won't work with true gocad formats (yet).
     #print(str(os.getcwd()))
-    os.chdir(directory)
-
+    #os.chdir(directory)
+    #print(os.getcwd())
+    
     pattern = type
     if type == "GOCAD_LITHO":
         pattern_a = "*"
@@ -26,7 +27,7 @@ def stats_gocad_voxet(directory, type, model_label='Anon', card=False, ent=False
     else:
         pattern_a = type
     # generate list of voxet header files to import
-    h_pattern = pattern_a + pattern + "*.vo"
+    h_pattern = directory+pattern_a + pattern + "*.vo"
     header_file = glob.glob(h_pattern)
 
     if len(header_file) != 0:
@@ -84,7 +85,8 @@ def stats_gocad_voxet(directory, type, model_label='Anon', card=False, ent=False
     card_header.loc[16, 2] = "'Cardinality'"
     card_header.loc[17, 2] = "'Cardinality'"
     card_header.loc[18, 2] = "'Cardinality'"
-    card_header.loc[24, 2] = card_file_name + '.vop1'
+    card_header.loc[23, 2] = "4"
+    card_header.loc[25, 2] = card_file_name + '.vop1'
 
     # format header info - entropy
     ent_header.loc[2, 1] = ent_file_name
@@ -92,19 +94,20 @@ def stats_gocad_voxet(directory, type, model_label='Anon', card=False, ent=False
     ent_header.loc[16, 2] = "'Entropy'"
     ent_header.loc[17, 2] = "'Entropy'"
     ent_header.loc[18, 2] = "'Entropy'"
-    ent_header.loc[24, 2] = ent_file_name + '.vop1'
-
+    ent_header.loc[23, 2] = "4"
+    ent_header.loc[25, 2] = ent_file_name + '.vop1'
 
     #list the voxet property binary files to import
     # generate list of voxet header files to import
-    p_pattern = pattern_a + pattern + "*.vop1"
+    p_pattern = directory+pattern_a + pattern + "*@@"
     prop_files = glob.glob(p_pattern)
     litho_df = pd.DataFrame(np.zeros([int(header.loc[6,1]*header.loc[6,2]*header.loc[6,3]), 1]))
 
+    
     for f in range(len(prop_files)):
-        data = np.fromfile(prop_files[f], '>f4') # import binary with format '>f4': '>' = big endian, 'f' float, '4' size
-        litho_df[f] = pd.DataFrame(data) # assign data to df column
+        data = np.fromfile(prop_files[f], '>i1') # import binary with format '>f4': '>' = big endian, 'f' float, '4' size
 
+        litho_df[f] = pd.DataFrame(data) # assign data to df column
     litho_df.columns = [prop_files] # label columns with model name
     # issue - the original voxet export includes 'air' - lithoID = 0, the recalculated model voxets do not.
     # we want air to be included, esp for geophys. So we create an 'air' mask using df indices where 0.0
@@ -122,16 +125,16 @@ def stats_gocad_voxet(directory, type, model_label='Anon', card=False, ent=False
         card_data = litho_df.nunique(1)
         if export is True:
             card_export = np.array(card_data, '>f4')
-            card_export.tofile(card_file_name + '.vop1')
-            card_header.to_csv(card_file_name + ".vo", sep=" ", na_rep="", header=False, index=False)
+            card_export.tofile(directory+card_file_name + '.vop1')
+            card_header.to_csv(directory+card_file_name + ".vo", sep=" ", na_rep="", header=False, index=False)
 
     #calculate entropy
     if ent is True:
         ent_data = litho_df.apply(entropy_custom, axis=1)
         if export is True:
             ent_export = np.array(ent_data, '>f4')
-            ent_export.tofile(ent_file_name + '.vop1')
-            ent_header.to_csv(ent_file_name + ".vo", sep=" ", na_rep="", header=False, index=False)
+            ent_export.tofile(directory+ent_file_name + '.vop1')
+            ent_header.to_csv(directory+ent_file_name + ".vo", sep=" ", na_rep="", header=False, index=False)
 
     #calculate frequency
     if propor is True:
@@ -151,45 +154,15 @@ def stats_gocad_voxet(directory, type, model_label='Anon', card=False, ent=False
                 propor_block_tmp.loc[16, 2] = f'''Proportion_lith_{v}'''
                 propor_block_tmp.loc[17, 2] = f'''Proportion_lith_{v}'''
                 propor_block_tmp.loc[18, 2] = f'''Proportion_lith_{v}'''
-                propor_block_tmp.loc[24, 2] = property_file_name
+                propor_block_tmp.loc[23, 2] = 4
+                propor_block_tmp.loc[25, 2] = property_file_name
                 propor_header = propor_header.append(propor_block_tmp)
                 propor_export = np.array(propor_data.loc[v], '>f4')
-                propor_export.tofile(property_file_name)
-            propor_header.to_csv(propor_header_file_name, sep=" ", na_rep="", header=False, index=False)
+                propor_export.tofile(directory+property_file_name)
+            propor_header.to_csv(directory+propor_header_file_name, sep=" ", na_rep="", header=False, index=False)
 
     return litho_df, card_data, ent_data, propor_data
 
-
-
-#%% export summary stats to voxet
-
-# def export_gocad_voxet(dataframe, path, type):
-#      '''exports a dataframe to gocad voxet binary
-#      'dataframe' is the pandas dataframe to be exported as voxet
-#      'path' is the export path
-#      'type' is the type of voxet - this defines the export name: "cardinality", "entropy", "probability"'''
-#      #write header
-#
-#      #write binary
-#
-#
-#      coords = np.zeros([int(header.loc[6,1]*header.loc[6,2]*header.loc[6,3]), 3])
-#      coords_ref =
-#
-# def writeCFloat(f, ndarray):
-#     np.asarray(ndarray, dtype=np.float32).tofile(f)
-# def writeCInt(f, ndarray):
-#     np.asarray(ndarray, dtype=np.int32).tofile(f)
-# def writeC80(f, string):
-#     np.asarray(string, dtype='a80').tofile(f)
-#
-# if __name__ == "__main__":
-#     f = open('test.out', mode='wb')
-#     ndarray = np.zeros((10000,10000))
-#
-#     writeCInt(f, ndarray)
-#     writeCFloat(f, ndarray)
-#     writeC80(f, 'coordinates')
 
 #%% visualisation (put in different py file)
 

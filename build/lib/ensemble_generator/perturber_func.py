@@ -12,11 +12,11 @@ sys.path.append(path.abspath('C:/Users/Mark/Documents/GitHub/Loop3D/map2loop'))
 from map2loop import m2l_utils
 
 # this works but wants me to import all the packages listed in m2l_utils... not sure I want to do that.
-from m2l_utils_egen import ddd2dircos  # this import can be linked to m2l_utils once these functions are linked i.e. in the same or linked repos
-from m2l_utils_egen import dircos2ddd  # this import can be linked to m2l_utils once these functions are linked i.e. in the same or linked repos
-from spherical_utils import sample_vMF  # thanks to https://github.com/jasonlaska/spherecluster/
+from ensemble_generator.m2l_utils_egen import ddd2dircos  # this import can be linked to m2l_utils once these functions are linked i.e. in the same or linked repos
+from ensemble_generator.m2l_utils_egen import dircos2ddd  # this import can be linked to m2l_utils once these functions are linked i.e. in the same or linked repos
+from ensemble_generator.spherical_utils import sample_vMF  # thanks to https://github.com/jasonlaska/spherecluster/
 # from egen_func import sample_vMF
-import m2l_utils_egen
+import ensemble_generator.m2l_utils_egen
 
 # from jetbrains://pycharm/navigate/reference?project=geol-model-egen&path=python/m2l_utils_egen.py import dd2dircos
 
@@ -59,12 +59,12 @@ for measurements at depth (section interps, drillholes etc. A flag for depth con
 but this complicates things a fair bit.'''
 
 
-def perturb_interface(samples, error_gps, file_type='contacts', distribution='uniform', DEM=False, source_geomodeller=False):
+def perturb_interface(output_location,samples, error_gps, file_type='contacts', distribution='uniform', DEM=False,source_geomodeller=False):
     ''' samples is the number of draws, thus the number of models in the ensemble
     error_gps is the assumed error in the location, and will be the width of the distribution
     distribution is the sampling type - defaults to uniform, the other option is 'normal' '''
     # write out parameters for record
-    output_location = './output'
+    # output_location = './output'
     params_file = open(output_location + "/perturb_" + file_type + "_int_params.csv", "w")
     params_file.write("samples," + str(samples) + "\n")
     params_file.write("error_gps," + str(error_gps) + "\n")
@@ -129,12 +129,12 @@ def perturb_interface(samples, error_gps, file_type='contacts', distribution='un
     return
 
 
-def perturb_orient_vMF(samples, kappa, error_gps, file_type='contacts', loc_distribution='uniform', DEM=False, source_geomodeller=False):
+def perturb_orient_vMF(output_location,samples, kappa, error_gps, file_type='contacts', loc_distribution='uniform', DEM=False, source_geomodeller=False):
     # samples is the number of draws, thus the number of models in the ensemble
     # kappa is the assumed error in the orientation, and is roughly the inverse to the width of the distribution
     # i.e. higher numbers = tighter distribution
     # write out parameters for record
-    output_location = './output'
+    # output_location = './output'
     params_file = open(output_location + "/perturb_" + file_type + "_orient_params.csv", "w")
     params_file.write("samples," + str(samples) + "\n")
     params_file.write("kappa," + str(kappa) + "\n")
@@ -195,7 +195,7 @@ def perturb_orient_vMF(samples, kappa, error_gps, file_type='contacts', loc_dist
     if file_type == 'faults':
         for s in range(samples):
             new_ori = []
-            new_orient = input_file[["X", "Y", "Z", "DipDirection", "dip", "DipPolarity", "formation"]]
+            new_orient = input_file[["X", "Y", "Z", "azimuth", "dip", "DipPolarity", "formation"]]
             for r in range(len(input_file)):
                 [l, m, n] = (ddd2dircos(input_file.loc[r, 'dip'], input_file.loc[r, 'DipDirection']))
                 samp_mu = sample_vMF(np.array([l, m, n]), kappa, 1)
@@ -205,7 +205,7 @@ def perturb_orient_vMF(samples, kappa, error_gps, file_type='contacts', loc_dist
             new_orient["DipDirection"], new_orient["dip"] = new_ori[1], new_ori[0]
             file_name = file_type + "_orient_" + str(s) + ".csv"
 
-            new_orient.to_csv(file_name)
+            new_orient.to_csv(output_location + '/' +file_name)
 
     else:
         for s in range(samples):
@@ -218,24 +218,25 @@ def perturb_orient_vMF(samples, kappa, error_gps, file_type='contacts', loc_dist
             new_ori = pd.DataFrame(new_ori)
             new_orient["X"], new_orient["Y"], new_orient["Z"] = new_coords["X"], new_coords["Y"], new_coords["Z"]
             new_orient["azimuth"], new_orient["dip"] = new_ori[1], new_ori[0]
-            new_orient.rename(columns={'azimuth' : 'dipdirection'}, inplace=True)
-            file_name = file_type + "_orient_" + str(s) + ".csv"
+            if(source_geomodeller):
+                new_orient.rename(columns={'azimuth' : 'dipdirection'}, inplace=True)
+            file_name = "orientations_" + str(s) + ".csv"
 
             new_orient.to_csv(output_location + '/' + file_name, index=False)
+            print(output_location + '/' + file_name)
 
     return
 
 
 # dont think I need the one below any more
-def perturb_fault_interface_vMF(samples, kappa):
+def perturb_fault_interface_vMF(output_location,samples, kappa):
     # convert dip strike to vector normal
     # samples is the number of draws, thus the number of models in the ensemble
     # kappa is the assumed error in the orientation, and is roughly the inverse to the width of the distribution
     # i.e. higher numbers = tighter distribution
-    file_fault_orientation = pd.read_csv("fault_orientations.csv")
+    file_fault_orientation = pd.read_csv(output_location+'/fault_orientations.csv')
     # convert dip strike to vector normal
     # the mean vector has three elements, "l", "m" and "n", each a direction cosine wrt the three coordinate axes
-
     for s in range(samples):
         new_ori = []
         new_orient = file_fault_orientation[["X", "Y", "Z", "DipDirection", "dip", "DipPolarity", "formation"]]
@@ -247,11 +248,12 @@ def perturb_fault_interface_vMF(samples, kappa):
             new_ori.append(dircos2ddd(samp_mu[0, 0], samp_mu[0, 1], samp_mu[0, 2]))
         new_ori = pd.DataFrame(new_ori)
         new_orient["azimuth"], new_orient["dip"] = new_ori[1], new_ori[0]
-        params_file = open("perturb_fault_orient_params.csv", "w")
+        params_file = open(output_location+"/perturb_fault_orient_params.csv", "w")
         params_file.write("samples," + str(samples) + "\n")
         params_file.write("kappa," + str(kappa) + "\n")
         #params_file.write("file_type," + file_type + "\n")
         #params_file.write("DEM," + str(DEM) + "\n")
         params_file.close()
-        file_name = "fault_orientations_" + str(s) + ".csv"
+        file_name = output_location+"/fault_orientations_" + str(s) + ".csv"
         new_orient.to_csv(file_name)
+        print(file_name)
