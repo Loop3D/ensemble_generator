@@ -7,7 +7,7 @@
 import pandas as pd
 import os
 import pathlib
-import egen_func as ef
+import ensemble_generator.egen_func as ef
 
 
 #%%

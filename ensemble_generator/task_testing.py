@@ -1,10 +1,10 @@
 #%%
-from egen_func import egen_paths
-from egen_func import egen_xml_to_task
-from egen_func import egen_calc_original
-from egen_func import egen_orig_model_voxets
-from egen_func import egen_create_batch
-from egen_func import egen_MC_cokrig_params
+from ensemble_generator.egen_func import egen_paths
+from ensemble_generator.egen_func import egen_xml_to_task
+from ensemble_generator.egen_func import egen_calc_original
+from ensemble_generator.egen_func import egen_orig_model_voxets
+from ensemble_generator.egen_func import egen_create_batch
+from ensemble_generator.egen_func import egen_MC_cokrig_params
 
 
 #%%

@@ -3,7 +3,7 @@
 # import m2l_export_egen as ex
 # import egen_summary_stats as es
 import multiprocessing as mp
-import stats_utils
+import ensemble_generator.stats_utils
 #import time
 import numpy as np
 import pathlib

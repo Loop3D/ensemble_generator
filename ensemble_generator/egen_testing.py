@@ -26,7 +26,7 @@ sys.path.append(os.path.abspath('./python'))
 sys.path.append(os.path.abspath('C:/Users/Mark/Documents/GitHub/Loop3D/map2loop/map2loop'))
 
 #egen imports
-import egen_func
+import ensemble_generator.egen_func
 
 # l2gm_ensemble modules - debug
 import networkx as nx

@@ -1,7 +1,7 @@
 # testing and timing multiprocessing - this one is the control
 
 #import multiprocessing as mp
-import m2l_export_egen as ex
+import ensemble_generator.m2l_export_egen as ex
 import time
 
 start_time = time.time()
