@@ -116,3 +116,5 @@ FME/cython/*.c
 #ensemble_generator test outputs
 egen_runs/
 gocad/
+Example2/
+test-data/
